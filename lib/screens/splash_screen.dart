@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,8 +29,8 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(24),
-          child: Image.asset(
-            'assets/fundi_logotext_base.png',
+          child: SvgPicture.asset(
+            'assets/fundi_logotext_base.svg',
             width: 150,
             height: 150,
           ),
