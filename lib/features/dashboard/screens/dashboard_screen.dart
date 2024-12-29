@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' hide Transaction;
 import '../../../core/services/firestore_service.dart';
 import '../../../core/models/transaction_model.dart' as model;
+import '../../../core/utils/util.dart';
 
 class DashboardScreen extends StatelessWidget {
   @override
@@ -9,7 +9,8 @@ class DashboardScreen extends StatelessWidget {
     final FirestoreService firestoreService = FirestoreService();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard'),
+        title: Text('Dashboard', style: AppTextStyles.headlineSmall),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: StreamBuilder<List<model.Transaction>>(
         stream: firestoreService.getTransactions(),
@@ -28,8 +29,8 @@ class DashboardScreen extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(height: 16),
-                Text('Expenses: $totalExpenses'),
-                Text('Income: $totalIncome'),
+                Text('Expenses: $totalExpenses', style: AppTextStyles.bodyLarge),
+                Text('Income: $totalIncome', style: AppTextStyles.bodyLarge),
                 SizedBox(height: 16),
                 ListView.builder(
                   shrinkWrap: true,
@@ -37,8 +38,8 @@ class DashboardScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     var transaction = transactions[index];
                     return ListTile(
-                      title: Text(transaction.category),
-                      subtitle: Text('Amount: ${transaction.amount}'),
+                      title: Text(transaction.category, style: AppTextStyles.bodyMedium),
+                      subtitle: Text('Amount: ${transaction.amount}', style: AppTextStyles.bodySmall),
                     );
                   },
                 ),
@@ -52,6 +53,7 @@ class DashboardScreen extends StatelessWidget {
           // Open add transaction dialog
         },
         child: Icon(Icons.add),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,

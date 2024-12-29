@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' hide Transaction;
 import '../../../core/services/firestore_service.dart';
 import '../../../core/models/transaction_model.dart' as model;
+import '../../../core/utils/util.dart';
 
 class TransactionsScreen extends StatelessWidget {
   @override
@@ -11,7 +11,8 @@ class TransactionsScreen extends StatelessWidget {
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Transactions'),
+          title: Text('Transactions', style: AppTextStyles.headlineSmall),
+          backgroundColor: Theme.of(context).colorScheme.primary,
           bottom: TabBar(
             tabs: [
               Tab(text: 'Day'),
@@ -54,8 +55,8 @@ class TransactionsListView extends StatelessWidget {
           itemBuilder: (context, index) {
             var transaction = transactions[index];
             return ListTile(
-              title: Text(transaction.category),
-              subtitle: Text('Amount: ${transaction.amount}'),
+              title: Text(transaction.category, style: AppTextStyles.bodyMedium),
+              subtitle: Text('Amount: ${transaction.amount}', style: AppTextStyles.bodySmall),
             );
           },
         );
