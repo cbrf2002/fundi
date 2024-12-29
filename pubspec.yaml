@@ -60,16 +60,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/login_bg.svg
-    - assets/fundi_logotext_base.svg
-    - assets/fundi_logosolo_base.svg
-    - assets/login_bg.png
-    - assets/fundi_logotext_base.png
-    - assets/fundi_logosolo_base.png
-    - assets/google.svg
-    - assets/google.png
-    - assets/allison-saeng-Zb4QHN8niIM-unsplash.jpg
-
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+    - assets/data/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

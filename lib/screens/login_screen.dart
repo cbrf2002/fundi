@@ -30,7 +30,7 @@ class LoginScreen extends StatelessWidget {
                 child: ImageFiltered( // Wrap with ImageFiltered
                   imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8), // Adjust blur intensity
                   child: Image.asset(
-                    'assets/allison-saeng-Zb4QHN8niIM-unsplash.jpg',
+                    'assets/images/jpg/allison-saeng-Zb4QHN8niIM-unsplash.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -41,7 +41,7 @@ class LoginScreen extends StatelessWidget {
           Align(
             alignment: Alignment.topCenter,
             child: Image.asset(
-              'assets/login_bg.png',
+              'assets/images/png/login_bg.png',
               fit: BoxFit.cover,
               width: MediaQuery.of(context).size.width,
               height: 250,
@@ -57,7 +57,7 @@ class LoginScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   child: Image.asset(
-                    'assets/fundi_logotext_base.png',
+                    'assets/images/png/fundi_logotext_base.png',
                     width: 250, // Increased size
                   ),
                 ),
@@ -88,7 +88,7 @@ class LoginScreen extends StatelessWidget {
                         );
                       },
                       icon: SvgPicture.asset(
-                        'assets/google.svg',
+                        'assets/images/svg/google.svg',
                         width: 24,
                         height: 24,
                       ),
