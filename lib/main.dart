@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'theme.dart';
-import 'screens/splash_screen.dart';
+import 'core/utils/theme.dart';
+import 'routes/app_routes.dart';
+import 'features/auth/screens/login_screen.dart';
+import 'features/splash/screens/splash_screen.dart';
+import '../screens/main_screen.dart';
 
 void main() {
   runApp(const Fundi());
@@ -24,7 +27,12 @@ class Fundi extends StatelessWidget {
       theme: MaterialTheme(TextTheme()).light(),
       darkTheme: MaterialTheme(TextTheme()).dark(),
       themeMode: ThemeMode.system,
-      home: const SplashScreen(),
+      initialRoute: AppRoutes.splash,
+      routes: {
+        '/splash': (context) => SplashScreen(),
+        '/login': (context) => LoginScreen(),
+        '/main': (context) => MainScreen(),
+      },
     );
   }
 }
