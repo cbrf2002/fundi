@@ -4,7 +4,7 @@ import 'core/utils/theme.dart';
 import 'routes/app_routes.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/splash/screens/splash_screen.dart';
-import '../screens/main_screen.dart';
+import 'main_screen/main_screen.dart';
 
 void main() {
   runApp(const Fundi());
