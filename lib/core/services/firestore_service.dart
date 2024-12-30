@@ -63,7 +63,7 @@ class FirestoreService {
           }, SetOptions(merge: true));
     } catch (e) {
       print('Error saving user preferences: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -94,7 +94,7 @@ class FirestoreService {
       await docRef.set(transaction.toMap());
     } catch (e) {
       print('Error adding transaction: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -108,7 +108,7 @@ class FirestoreService {
           .update(transaction.toMap());
     } catch (e) {
       print('Error updating transaction: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -122,7 +122,7 @@ class FirestoreService {
           .delete();
     } catch (e) {
       print('Error deleting transaction: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -141,7 +141,7 @@ class FirestoreService {
       await _db.collection(collection).doc(docId).set(data);
     } catch (e) {
       print('Error setting document: $e');
-      throw e;
+      rethrow;
     }
   }
 
