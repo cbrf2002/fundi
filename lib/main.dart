@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/utils/theme.dart';
 import 'routes/app_routes.dart';
-import 'features/auth/screens/login_screen.dart';
-import 'features/splash/screens/splash_screen.dart';
-import 'main_screen/main_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
   runApp(const Fundi());
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.light, // Light icons for dark mode
+      statusBarBrightness: Brightness.dark, // Dark icons for light mode
     ),
   );
 }
@@ -28,11 +28,7 @@ class Fundi extends StatelessWidget {
       darkTheme: MaterialTheme(TextTheme()).dark(),
       themeMode: ThemeMode.system,
       initialRoute: AppRoutes.splash,
-      routes: {
-        '/splash': (context) => SplashScreen(),
-        '/login': (context) => LoginScreen(),
-        '/main': (context) => MainScreen(),
-      },
+      routes: AppRoutes.routes,
     );
   }
 }
