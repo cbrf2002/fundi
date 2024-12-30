@@ -9,8 +9,14 @@ class FirestoreService {
         snapshot.docs.map((doc) => model.Transaction.fromMap(doc.data(), doc.id)).toList());
   }
 
-  Future<void> addTransaction(model.Transaction transaction) {
-    return _db.collection('transactions').add(transaction.toMap());
+  Future<void> addTransaction(model.Transaction transaction) async {
+    try {
+      final docRef = _db.collection('transactions').doc();
+      transaction = transaction.copyWith(id: docRef.id);
+      await docRef.set(transaction.toMap());
+    } catch (e) {
+      print('Error adding transaction: $e');
+    }
   }
 
   Future<void> updateTransaction(model.Transaction transaction) {
