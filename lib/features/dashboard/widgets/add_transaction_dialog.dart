@@ -5,7 +5,7 @@ import '../../../core/models/transaction_model.dart';
 import '../../../core/providers/formatting_provider.dart';
 
 class AddTransactionDialog extends StatefulWidget {
-  const AddTransactionDialog({Key? key}) : super(key: key);
+  const AddTransactionDialog({super.key});
 
   @override
   _AddTransactionDialogState createState() => _AddTransactionDialogState();

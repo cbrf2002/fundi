@@ -8,13 +8,13 @@ class AuthTextField extends StatefulWidget {
   final String? Function(String?)? validator;
 
   const AuthTextField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.label,
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   _AuthTextFieldState createState() => _AuthTextFieldState();

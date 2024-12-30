@@ -7,7 +7,7 @@ class EmailSignUpForm extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
-  EmailSignUpForm({Key? key}) : super(key: key);
+  EmailSignUpForm({super.key});
 
   @override
   Widget build(BuildContext context) {

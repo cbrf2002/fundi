@@ -6,7 +6,7 @@ import '../widgets/email_sign_in_form.dart';
 import '../widgets/email_sign_up_form.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -129,10 +129,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 OutlinedButton(
                                   onPressed: toggleEmailExpansion,
-                                  child: const Text('Sign In With Email'),
                                   style: OutlinedButton.styleFrom(
                                     minimumSize: const Size.fromHeight(48),
                                   ),
+                                  child: const Text('Sign In With Email'),
                                 ),
                                 const SizedBox(height: 16),
                                 FilledButton.icon(
@@ -159,10 +159,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       isEmailExpanded = true;
                                     });
                                   },
-                                  child: const Text('Create Account'),
                                   style: TextButton.styleFrom(
                                     minimumSize: const Size.fromHeight(48),
                                   ),
+                                  child: const Text('Create Account'),
                                 ),
                               ],
                             ),
