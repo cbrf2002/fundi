@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../../core/models/transaction_model.dart' as model;
-import '../../../core/utils/util.dart';
+import '../../../core/services/firestore_service.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -11,20 +11,13 @@ class TransactionsScreen extends StatefulWidget {
 }
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
-  late Future<void> _fetchData;
-  List<model.Transaction> transactions = [];
+  late Stream<List<model.Transaction>> _transactionsStream;
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
     super.initState();
-    _fetchData = _loadData();
-  }
-
-  Future<void> _loadData() async {
-    final querySnapshot = await FirebaseFirestore.instance.collection('transactions').get();
-    setState(() {
-      transactions = querySnapshot.docs.map((doc) => model.Transaction.fromMap(doc.data(), doc.id)).toList();
-    });
+    _transactionsStream = _firestoreService.getTransactions();
   }
 
   @override
@@ -33,11 +26,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Transactions', style: Theme.of(context).textTheme.headlineSmall),
+          title: Text(
+            'Transactions',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+          ),
           backgroundColor: Theme.of(context).colorScheme.primary,
           bottom: TabBar(
-            labelColor: Theme.of(context).colorScheme.onPrimary, // Active tab text color
-            unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.6), // Inactive tab text color
+            labelColor: Theme.of(context).colorScheme.onPrimary,
+            unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.6),
             tabs: const [
               Tab(text: 'Day'),
               Tab(text: 'Week'),
@@ -46,16 +44,21 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ],
           ),
         ),
-        body: FutureBuilder(
-          future: _fetchData,
+        body: StreamBuilder<List<model.Transaction>>(
+          stream: _transactionsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else {
+              final transactions = snapshot.data ?? [];
               return RefreshIndicator(
-                onRefresh: _loadData,
+                onRefresh: () async {
+                  setState(() {
+                    _transactionsStream = _firestoreService.getTransactions();
+                  });
+                },
                 child: TabBarView(
                   children: [
                     TransactionsListView(timeFrame: 'day', transactions: transactions),
@@ -85,9 +88,14 @@ class TransactionsListView extends StatelessWidget {
       itemCount: transactions.length,
       itemBuilder: (context, index) {
         var transaction = transactions[index];
+        String formattedDate = DateFormat('EEE, MMM d, yyyy').format(transaction.date);
         return ListTile(
           title: Text(transaction.category, style: Theme.of(context).textTheme.bodyMedium),
-          subtitle: Text('Amount: ${transaction.amount}', style: Theme.of(context).textTheme.bodySmall),
+          subtitle: Text(
+            'Amount: ${transaction.amount.toStringAsFixed(2)}\nDate: $formattedDate',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          isThreeLine: true, // Ensures the subtitle fits without truncation
         );
       },
     );
