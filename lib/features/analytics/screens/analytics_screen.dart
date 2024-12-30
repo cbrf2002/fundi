@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/formatting_provider.dart';
-import '../../../core/models/transaction_model.dart' as model;
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
