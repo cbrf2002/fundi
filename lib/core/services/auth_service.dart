@@ -14,8 +14,39 @@ class AuthService {
     // );
     // UserCredential userCredential = await _auth.signInWithCredential(credential);
     // return userCredential.user;
-    print('IN DEVELOPMENT');
-    return null;
+    try {
+      print('IN DEVELOPMENT');
+      return null;
+    } catch (e) {
+      print('Error during Google Sign-In: $e');
+      return null;
+    }
+  }
+
+  Future<User?> signUpWithEmail(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user;
+    } catch (e) {
+      print('Error during Email Sign-Up: $e');
+      return null;
+    }
+  }
+
+  Future<User?> signInWithEmail(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user;
+    } catch (e) {
+      print('Error during Email Sign-In: $e');
+      return null;
+    }
   }
 
   Future<void> signOut() async {
