@@ -1,9 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/theme_provider.dart';
+import '../../../core/providers/formatting_provider.dart';
+import '../../../routes/app_routes.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    await Future.delayed(const Duration(seconds: 2));
+    
+    if (!mounted) return;
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      // Initialize theme and formatting preferences with user preferences
+      await Future.wait([
+        Provider.of<ThemeProvider>(context, listen: false)
+            .initializeTheme(currentUser.uid),
+        Provider.of<FormattingProvider>(context, listen: false)
+            .initializeFormatting(currentUser.uid),
+      ]);
+      
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, AppRoutes.main);
+    } else {
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,13 +57,6 @@ class SplashScreen extends StatelessWidget {
         statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
       ),
     );
-
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacementNamed(
-        context,
-        '/login', // Update navigation logic based on user state
-      );
-    });
 
     return Scaffold(
       body: Center(
