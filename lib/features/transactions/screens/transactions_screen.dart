@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../../core/models/transaction_model.dart' as model;
 import '../../../core/services/firestore_service.dart';
+import '../../../core/providers/formatting_provider.dart';
+import '../../dashboard/widgets/add_transaction_dialog.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
 
   @override
-  _TransactionsScreenState createState() => _TransactionsScreenState();
+  State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
@@ -18,6 +21,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   void initState() {
     super.initState();
     _transactionsStream = _firestoreService.getTransactions();
+  }
+
+  void _showAddTransactionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const AddTransactionDialog(),
+    );
   }
 
   @override
@@ -43,6 +53,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               Tab(text: 'Year'),
             ],
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showAddTransactionDialog,
+          child: const Icon(Icons.add),
         ),
         body: StreamBuilder<List<model.Transaction>>(
           stream: _transactionsStream,
@@ -82,20 +96,76 @@ class TransactionsListView extends StatelessWidget {
 
   const TransactionsListView({super.key, required this.timeFrame, required this.transactions});
 
+  List<model.Transaction> _filterTransactions() {
+    final now = DateTime.now();
+    final startDate = switch (timeFrame) {
+      'day' => DateTime(now.year, now.month, now.day),
+      'week' => now.subtract(const Duration(days: 7)),
+      'month' => DateTime(now.year, now.month, 1),
+      'year' => DateTime(now.year, 1, 1),
+      _ => now,
+    };
+
+    return transactions
+        .where((t) => t.date.isAfter(startDate) || t.date.isAtSameMomentAs(startDate))
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date)); // Sort by newest first
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: transactions.length,
+    final filteredTransactions = _filterTransactions();
+    final formattingProvider = Provider.of<FormattingProvider>(context);
+
+    if (filteredTransactions.isEmpty) {
+      return const Center(
+        child: Text('No transactions for this period'),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: filteredTransactions.length,
+      separatorBuilder: (context, index) => const Divider(),
       itemBuilder: (context, index) {
-        var transaction = transactions[index];
-        String formattedDate = DateFormat('EEE, MMM d, yyyy').format(transaction.date);
+        var transaction = filteredTransactions[index];
+        final bool isExpense = transaction.type == model.TransactionType.expense;
+        final color = isExpense ? Colors.red : Colors.green;
+        final icon = isExpense ? Icons.remove : Icons.add;
+        final time = DateFormat('HH:mm').format(transaction.date);
+        final date = DateFormat('MMM d, y').format(transaction.date);
+
         return ListTile(
-          title: Text(transaction.category, style: Theme.of(context).textTheme.bodyMedium),
-          subtitle: Text(
-            'Amount: ${transaction.amount.toStringAsFixed(2)}\nDate: $formattedDate',
-            style: Theme.of(context).textTheme.bodySmall,
+          leading: CircleAvatar(
+            backgroundColor: color.withOpacity(0.2),
+            child: Icon(
+              icon,
+              color: color,
+            ),
           ),
-          isThreeLine: true, // Ensures the subtitle fits without truncation
+          title: Text(
+            transaction.category,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                date,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              Text(
+                time,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          trailing: Text(
+            formattingProvider.formatAmount(transaction.amount),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: color,
+                ),
+          ),
         );
       },
     );
