@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/firestore_service.dart';
-import '../models/user_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
