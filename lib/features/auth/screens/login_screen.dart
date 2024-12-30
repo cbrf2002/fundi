@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fundi/core/services/auth_service.dart';
 import '../widgets/email_sign_in_form.dart';
@@ -15,6 +16,25 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isSignUp = false;
   bool isEmailExpanded = false;
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _configureStatusBar();
+  }
+
+  void _configureStatusBar() {
+    final brightness = Theme.of(context).brightness;
+    if (brightness == Brightness.dark) {
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ));
+    } else {
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+      ));
+    }
+  }
+
   void toggleEmailExpansion() {
     setState(() {
       isEmailExpanded = !isEmailExpanded;
@@ -26,6 +46,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine the logo based on the theme
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final String logoPath = isDarkMode ? 'lib/assets/logo/logoDark.svg' : 'lib/assets/logo/logoLight.svg';
+
     return Scaffold(
       body: Stack(
         children: [
@@ -57,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SvgPicture.asset(
-                    'lib/assets/logo/logoDark.svg',
+                    logoPath,
                     width: 200,
                     height: 200,
                   ),
