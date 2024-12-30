@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/services/firestore_service.dart';
 import '../../../core/models/transaction_model.dart' as model;
 
 class AddTransactionDialog extends StatefulWidget {
@@ -39,21 +39,28 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     }
 
     final transaction = model.Transaction(
-      id: '', // Firestore will generate this
+      id: '', // ID will be assigned in FirestoreService
       category: category,
       amount: amount,
       date: DateTime.now(),
       type: type,
     );
 
-    await FirebaseFirestore.instance.collection('transactions').add(transaction.toMap());
+    try {
+      final firestoreService = FirestoreService();
+      await firestoreService.addTransaction(transaction);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Transaction added successfully.')),
-    );
-
-    Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Transaction added successfully.')),
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error adding transaction.')),
+      );
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
