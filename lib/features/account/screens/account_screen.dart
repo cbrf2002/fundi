@@ -1,37 +1,40 @@
 import 'package:flutter/material.dart';
 
 class AccountScreen extends StatelessWidget {
+  const AccountScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account'),
+        title: const Text('Account'),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              title: Text('Change Currency'),
-              trailing: Icon(Icons.arrow_forward),
-              onTap: () {
-                // Open currency selection.
-              },
-            ),
-            ListTile(
-              title: Text('Toggle Dark Mode'),
-              trailing: Switch(value: false, onChanged: (value) {}),
-            ),
-            Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: Text('Log Out'),
-            ),
-          ],
-        ),
+        children: [
+          ListTile(
+            leading: const Icon(Icons.currency_exchange),
+            title: const Text('Change Currency'),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: () {
+              // Implement currency selection logic
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Toggle Dark Mode'),
+            value: Theme.of(context).brightness == Brightness.dark,
+            onChanged: (bool value) {
+              // Implement theme toggle logic
+            },
+          ),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text('Log Out'),
+          ),
+        ],
       ),
     );
   }
