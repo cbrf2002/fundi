@@ -24,15 +24,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _configureStatusBar() {
     final brightness = Theme.of(context).brightness;
-    if (brightness == Brightness.dark) {
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-      ));
-    } else {
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-      ));
-    }
+        statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: brightness,
+      ),
+    );
   }
 
   void toggleEmailExpansion() {
