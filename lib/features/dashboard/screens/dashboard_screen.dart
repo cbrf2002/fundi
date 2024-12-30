@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/models/transaction_model.dart' as model;
 import '../../../core/models/budget_model.dart';
+import '../../../core/services/firestore_service.dart';
 import '../widgets/add_transaction_dialog.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -14,57 +14,42 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  void _configureStatusBar() {
-    final brightness = Theme.of(context).brightness;
-    if (brightness == Brightness.dark) {
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent, // Use transparent or any preferred color
-      ));
-    } else {
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent, // Use transparent or any preferred color
-      ));
-    }
-  }
-
-  late Future<void> _fetchData;
-  List<model.Transaction> transactions = [];
-  Budget budget = Budget(
-      totalIncome: 0,
-      totalExpenses: 0,
-      netAmount: 0
-  );
+  final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
     super.initState();
-    _fetchData = _loadData();
+    _configureStatusBar();
   }
 
-  Future<void> _loadData() async {
-    final querySnapshot = await FirebaseFirestore.instance.collection('transactions').get();
-    transactions = querySnapshot.docs.map((doc) => model.Transaction.fromMap(doc.data(), doc.id)).toList();
-    transactions.sort((a, b) => b.timestamp.compareTo(a.timestamp)); // Sort transactions by newest first
-    _calculateBudget();
+  void _configureStatusBar() {
+    final brightness = Theme.of(context).brightness;
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: brightness,
+      ),
+    );
   }
 
-  void _calculateBudget() {
+  Budget _calculateBudget(List<model.Transaction> transactions) {
     double totalIncome = 0;
     double totalExpenses = 0;
-    transactions.forEach((transaction) {
+
+    for (var transaction in transactions) {
       if (transaction.type == 'income') {
         totalIncome += transaction.amount;
       } else {
         totalExpenses += transaction.amount;
       }
-    });
-    setState(() {
-      budget = Budget(
-        totalIncome: totalIncome,
-        totalExpenses: totalExpenses,
-        netAmount: totalIncome - totalExpenses,
-      );
-    });
+    }
+
+    return Budget(
+      totalIncome: totalIncome,
+      totalExpenses: totalExpenses,
+      netAmount: totalIncome - totalExpenses,
+    );
   }
 
   String _formatCurrency(double amount) {
@@ -73,35 +58,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _configureStatusBar();
-
     final DateTime now = DateTime.now();
     final String formattedDate = DateFormat('EEE, MMM d, yyyy').format(now);
 
     return Scaffold(
-      body: FutureBuilder(
-        future: _fetchData,
+      body: StreamBuilder<List<model.Transaction>>(
+        stream: _firestoreService.getTransactions(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
+            var transactions = snapshot.data ?? [];
+            transactions.sort((a, b) => b.date.compareTo(a.date)); // Sort by newest first
+            final budget = _calculateBudget(transactions);
+
             return RefreshIndicator(
-              onRefresh: _loadData,
+              onRefresh: () async {
+                setState(() {}); // Trigger a rebuild to refresh the stream
+              },
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 32.0), // Adjust this value if needed to avoid the status bar
+                      padding: const EdgeInsets.only(top: 32.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 32),
                           Text('Dashboard', style: Theme.of(context).textTheme.displaySmall),
                           const SizedBox(height: 16),
                           Text(formattedDate, style: Theme.of(context).textTheme.titleSmall),
+                          const SizedBox(height: 32),
                         ],
                       ),
                     ),
@@ -112,61 +101,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
                         children: [
-                          Card(
-                            color: Theme.of(context).colorScheme.surfaceContainerLow,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.money_off, color: Theme.of(context).colorScheme.primary, size: 24),
-                                const SizedBox(height: 8),
-                                Text('Expenses', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
-                                const SizedBox(height: 8),
-                                Text(_formatCurrency(budget.totalExpenses), style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
-                              ],
-                            ),
+                          _buildCard(
+                            title: 'Expenses',
+                            amount: budget.totalExpenses,
+                            icon: Icons.money_off,
+                            context: context,
                           ),
-                          Card(
-                            color: Theme.of(context).colorScheme.surfaceContainerLow,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.account_balance_wallet, color: Theme.of(context).colorScheme.primary, size: 24),
-                                const SizedBox(height: 8),
-                                Text('Budget', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
-                                const SizedBox(height: 8),
-                                Text(_formatCurrency(budget.netAmount), style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
-                              ],
-                            ),
+                          _buildCard(
+                            title: 'Budget',
+                            amount: budget.netAmount,
+                            icon: Icons.account_balance_wallet,
+                            context: context,
                           ),
-                          Card(
-                            color: Theme.of(context).colorScheme.surfaceContainerLow,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.attach_money, color: Theme.of(context).colorScheme.primary, size: 24),
-                                const SizedBox(height: 8),
-                                Text('Income', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
-                                const SizedBox(height: 8),
-                                Text(_formatCurrency(budget.totalIncome), style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface)),
-                              ],
-                            ),
+                          _buildCard(
+                            title: 'Income',
+                            amount: budget.totalIncome,
+                            icon: Icons.attach_money,
+                            context: context,
                           ),
-                          Card(
-                            color: Theme.of(context).colorScheme.surfaceContainerLow,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.trending_up, color: Theme.of(context).colorScheme.primary, size: 24),
-                                const SizedBox(height: 8),
-                                const Text('Top Expenses'),
-                                const SizedBox(height: 8),
-                                ...transactions
-                                    .where((t) => t.type == 'expense')
-                                    .take(3)
-                                    .map((t) => Text('${t.category}: ${_formatCurrency(t.amount)}')),
-                              ],
-                            ),
-                          ),
+                          _buildTopExpensesCard(transactions, context),
                         ],
                       ),
                     ),
@@ -175,7 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Expanded(
                       child: transactions.isNotEmpty
                           ? ListView.separated(
-                              itemCount: transactions.length > 5 ? 5 : transactions.length,
+                              itemCount: transactions.length > 6 ? 6 : transactions.length,
                               itemBuilder: (context, index) {
                                 var transaction = transactions[index];
                                 return ListTile(
@@ -191,7 +144,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 );
                               },
                               separatorBuilder: (context, index) {
-                                return Divider();
+                                return const Divider();
                               },
                             )
                           : const Center(child: Text('No recent transactions')),
@@ -211,9 +164,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return const AddTransactionDialog();
             },
           );
-          _loadData(); // Refresh data after adding transaction
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildCard({
+    required String title,
+    required double amount,
+    required IconData icon,
+    required BuildContext context,
+  }) {
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _formatCurrency(amount),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopExpensesCard(List<model.Transaction> transactions, BuildContext context) {
+    final topExpenses = transactions
+        .where((t) => t.type == 'expense')
+        .take(3)
+        .toList();
+
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.trending_up, color: Theme.of(context).colorScheme.primary, size: 24),
+          const SizedBox(height: 8),
+          const Text('Top Expenses'),
+          const SizedBox(height: 8),
+          ...topExpenses.map(
+            (t) => Text(
+              '${t.category}: ${_formatCurrency(t.amount)}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ],
       ),
     );
   }
