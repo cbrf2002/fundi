@@ -1,71 +1,61 @@
 import 'package:flutter/material.dart';
-import '../../../core/services/firestore_service.dart';
 import '../../../core/models/transaction_model.dart' as model;
-import '../../../core/utils/util.dart';
 
 class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final FirestoreService firestoreService = FirestoreService();
+    final List<model.Transaction> transactions = []; // Example data
+    final double totalExpenses = 200.0; // Example calculation
+    final double totalIncome = 500.0; // Example calculation
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard', style: AppTextStyles.headlineSmall),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: const Text('Dashboard'),
       ),
-      body: StreamBuilder<List<model.Transaction>>(
-        stream: firestoreService.getTransactions(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          var transactions = snapshot.data!;
-          double totalExpenses = transactions
-              .where((t) => t.type == 'expense')
-              .fold(0.0, (sum, t) => sum + t.amount);
-          double totalIncome = transactions
-              .where((t) => t.type == 'income')
-              .fold(0.0, (sum, t) => sum + t.amount);
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: 16),
-                Text('Expenses: $totalExpenses', style: AppTextStyles.bodyLarge),
-                Text('Income: $totalIncome', style: AppTextStyles.bodyLarge),
-                SizedBox(height: 16),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: transactions.length,
-                  itemBuilder: (context, index) {
-                    var transaction = transactions[index];
-                    return ListTile(
-                      title: Text(transaction.category, style: AppTextStyles.bodyMedium),
-                      subtitle: Text('Amount: ${transaction.amount}', style: AppTextStyles.bodySmall),
-                    );
-                  },
-                ),
-              ],
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          Card(
+            child: ListTile(
+              title: Text(
+                'Total Expenses',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              subtitle: Text(
+                '\$${totalExpenses.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: ListTile(
+              title: Text(
+                'Total Income',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              subtitle: Text(
+                '\$${totalIncome.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...transactions.map((transaction) => Card(
+                child: ListTile(
+                  title: Text(transaction.category),
+                  subtitle: Text('Amount: \$${transaction.amount.toStringAsFixed(2)}'),
+                ),
+              )),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Open add transaction dialog
         },
-        child: Icon(Icons.add),
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        onTap: (index) {
-          // Handle navigation.
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Transactions'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Analytics'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
-        ],
+        child: const Icon(Icons.add),
       ),
     );
   }
