@@ -6,15 +6,16 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<User?> signInWithGoogle() async {
-    // final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    // final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-    // final AuthCredential credential = GoogleAuthProvider.credential(
-    //   accessToken: googleAuth.accessToken,
-    //   idToken: googleAuth.idToken,
-    // );
-    // UserCredential userCredential = await _auth.signInWithCredential(credential);
-    // return userCredential.user;
     try {
+      // final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      // final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+      // final AuthCredential credential = GoogleAuthProvider.credential(
+      //   accessToken: googleAuth.accessToken,
+      //   idToken: googleAuth.idToken,
+      // );
+      // UserCredential userCredential = await _auth.signInWithCredential(credential);
+      // return userCredential.user;
+
       print('IN DEVELOPMENT');
       return null;
     } catch (e) {
@@ -55,4 +56,10 @@ class AuthService {
   }
 
   Stream<User?> get userChanges => _auth.authStateChanges();
+
+  /// Method to get the current user's ID safely
+  String? getCurrentUserId() {
+    final user = _auth.currentUser;
+    return user?.uid;
+  }
 }
