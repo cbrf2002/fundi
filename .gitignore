@@ -46,3 +46,7 @@ app.*.map.json
 
 # windsurf rules
 .windsurfrules
+
+# Firebase
+**/google-services.json
+lib/firebase_options.dart
