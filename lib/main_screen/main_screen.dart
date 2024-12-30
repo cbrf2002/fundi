@@ -14,15 +14,42 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  late final PageController _pageController;
 
-  final _screens = [
-    const DashboardScreen(key: PageStorageKey('DashboardScreen')),
-    const TransactionsScreen(key: PageStorageKey('TransactionsScreen')),
-    const AnalyticsScreen(key: PageStorageKey('AnalyticsScreen')),
-    const AccountScreen(key: PageStorageKey('AccountScreen')),
+  final List<Widget> _screens = [
+    const DashboardScreen(),
+    const TransactionsScreen(),
+    const AnalyticsScreen(),
+    const AccountScreen(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the PageController
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the PageController when the widget is removed
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _onTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Animate to the selected page
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -31,8 +58,9 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged, // Update the selected index when swiping
         children: _screens,
       ),
       bottomNavigationBar: CustomBottomNavBar(
