@@ -4,7 +4,7 @@ class CustomBottomNavBar extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const CustomBottomNavBar({required this.currentIndex, required this.onTap});
+  const CustomBottomNavBar({super.key, required this.currentIndex, required this.onTap});
 
   @override
   _CustomBottomNavBarState createState() => _CustomBottomNavBarState();
@@ -27,9 +27,14 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return BottomNavigationBar(
       currentIndex: widget.currentIndex,
       onTap: widget.onTap,
+      selectedItemColor: theme.colorScheme.onSurface,
+      unselectedItemColor: theme.colorScheme.onSurfaceVariant,
+      selectedLabelStyle: theme.textTheme.bodyMedium,
+      unselectedLabelStyle: theme.textTheme.bodySmall,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
         BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Transactions'),
