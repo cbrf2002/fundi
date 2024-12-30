@@ -15,6 +15,22 @@ class Transaction {
     required this.type,
   });
 
+  Transaction copyWith({
+    String? id,
+    String? category,
+    double? amount,
+    DateTime? date,
+    String? type,
+  }) {
+    return Transaction(
+      id: id ?? this.id,
+      category: category ?? this.category,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      type: type ?? this.type,
+    );
+  }
+
   factory Transaction.fromMap(Map<String, dynamic> data, String documentId) {
     return Transaction(
       id: documentId,
