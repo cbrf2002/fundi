@@ -1,11 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum TransactionType {
+  expense,
+  income,
+}
+
 class Transaction {
   final String id;
   final String category;
   final double amount;
   final DateTime date;
-  final String type; // 'expense' or 'income'
+  final TransactionType type;
 
   Transaction({
     required this.id,
@@ -20,7 +25,7 @@ class Transaction {
     String? category,
     double? amount,
     DateTime? date,
-    String? type,
+    TransactionType? type,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -37,7 +42,7 @@ class Transaction {
       category: data['category'] ?? '',
       amount: data['amount']?.toDouble() ?? 0.0,
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      type: data['type'] ?? 'expense',
+      type: data['type'] == 'income' ? TransactionType.income : TransactionType.expense,
     );
   }
 
@@ -46,7 +51,7 @@ class Transaction {
       'category': category,
       'amount': amount,
       'date': date,
-      'type': type,
+      'type': type == TransactionType.income ? 'income' : 'expense',
     };
   }
 
