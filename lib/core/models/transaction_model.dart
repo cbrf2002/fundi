@@ -36,7 +36,7 @@ class Transaction {
       id: documentId,
       category: data['category'] ?? '',
       amount: data['amount']?.toDouble() ?? 0.0,
-      date: (data['date'] as Timestamp).toDate(),
+      date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       type: data['type'] ?? 'expense',
     );
   }
@@ -49,4 +49,6 @@ class Transaction {
       'type': type,
     };
   }
+
+  DateTime get timestamp => date;
 }
