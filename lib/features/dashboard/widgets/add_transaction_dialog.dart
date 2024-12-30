@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/services/firestore_service.dart';
-import '../../../core/models/transaction_model.dart' as model;
+import '../../../core/models/transaction_model.dart';
+import '../../../core/providers/formatting_provider.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   const AddTransactionDialog({Key? key}) : super(key: key);
@@ -12,7 +14,7 @@ class AddTransactionDialog extends StatefulWidget {
 class _AddTransactionDialogState extends State<AddTransactionDialog> {
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
-  String _transactionType = 'expense';
+  TransactionType _transactionType = TransactionType.expense;
 
   final List<String> _expenseCategories = [
     'Food', 'Transport', 'Utilities', 'Shopping', 'Entertainment', 'Health', 'Education', 'Rent'
@@ -23,13 +25,12 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   ];
 
   List<String> get _presetCategories {
-    return _transactionType == 'expense' ? _expenseCategories : _incomeCategories;
+    return _transactionType == TransactionType.expense ? _expenseCategories : _incomeCategories;
   }
 
   void _addTransaction() async {
     final String category = _categoryController.text;
-    final double amount = double.tryParse(_amountController.text) ?? 0.0;
-    final String type = _transactionType;
+    final double amount = double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
 
     if (category.isEmpty || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -38,32 +39,37 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
       return;
     }
 
-    final transaction = model.Transaction(
+    final transaction = Transaction(
       id: '', // ID will be assigned in FirestoreService
       category: category,
       amount: amount,
       date: DateTime.now(),
-      type: type,
+      type: _transactionType,
     );
 
     try {
       final firestoreService = FirestoreService();
       await firestoreService.addTransaction(transaction);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Transaction added successfully.')),
-      );
-      Navigator.of(context).pop();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Transaction added successfully.')),
+        );
+        Navigator.of(context).pop();
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error adding transaction.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding transaction: $e')),
+        );
+      }
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final formattingProvider = Provider.of<FormattingProvider>(context);
+    
     return AlertDialog(
       title: Column(
         children: [
@@ -72,76 +78,81 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           Text('Add New Transaction', style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
         ],
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: RadioListTile<String>(
-                  title: const Text('Expense'),
-                  value: 'expense',
-                  groupValue: _transactionType,
-                  onChanged: (value) {
-                    setState(() {
-                      _transactionType = value!;
-                      _categoryController.clear(); // Clear category when type changes
-                    });
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: RadioListTile<TransactionType>(
+                    title: const Text('Expense'),
+                    value: TransactionType.expense,
+                    groupValue: _transactionType,
+                    onChanged: (value) {
+                      setState(() {
+                        _transactionType = value!;
+                        _categoryController.clear();
+                      });
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: RadioListTile<TransactionType>(
+                    title: const Text('Income'),
+                    value: TransactionType.income,
+                    groupValue: _transactionType,
+                    onChanged: (value) {
+                      setState(() {
+                        _transactionType = value!;
+                        _categoryController.clear();
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            TextField(
+              controller: _categoryController,
+              decoration: InputDecoration(
+                labelText: 'Category',
+                prefixIcon: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    icon: const Icon(Icons.arrow_drop_down),
+                    value: _categoryController.text.isEmpty ? null : _categoryController.text,
+                    hint: const Text('Select Category'),
+                    onChanged: (value) {
+                      setState(() {
+                        _categoryController.text = value!;
+                      });
+                    },
+                    items: _presetCategories.map((category) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _categoryController.clear();
                   },
                 ),
-              ),
-              Expanded(
-                child: RadioListTile<String>(
-                  title: const Text('Income'),
-                  value: 'income',
-                  groupValue: _transactionType,
-                  onChanged: (value) {
-                    setState(() {
-                      _transactionType = value!;
-                      _categoryController.clear(); // Clear category when type changes
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-          TextField(
-            controller: _categoryController,
-            decoration: InputDecoration(
-              labelText: 'Custom Category',
-              prefixIcon: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  icon: const Icon(Icons.arrow_drop_down),
-                  value: _categoryController.text.isEmpty ? null : _categoryController.text,
-                  hint: const Text('Select Category'),
-                  onChanged: (value) {
-                    setState(() {
-                      _categoryController.text = value!;
-                    });
-                  },
-                  items: _presetCategories.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
-                ),
-              ),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _categoryController.clear();
-                },
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _amountController,
-            decoration: const InputDecoration(labelText: 'Amount'),
-            keyboardType: TextInputType.number,
-          ),
-        ],
+            const SizedBox(height: 8),
+            TextField(
+              controller: _amountController,
+              decoration: InputDecoration(
+                labelText: 'Amount',
+                prefixText: formattingProvider.getCurrencySymbol(),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
