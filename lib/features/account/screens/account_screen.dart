@@ -68,6 +68,9 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _updatePreferences(UserPreferences newPreferences) async {
     UserPreferences oldPreferences = _preferences;
+    final formattingProvider = Provider.of<FormattingProvider>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
     try {
       setState(() {
         _preferences = newPreferences;
@@ -76,24 +79,26 @@ class _AccountScreenState extends State<AccountScreen> {
       await _accountController.saveUserPreferences(newPreferences);
 
       // Update providers
-      if (newPreferences.currency != oldPreferences.currency) {
-        Provider.of<FormattingProvider>(context, listen: false)
-            .setCurrency(newPreferences.currency);
-      }
-      if (newPreferences.showCents != oldPreferences.showCents) {
-        Provider.of<FormattingProvider>(context, listen: false)
-            .setShowCents(newPreferences.showCents);
-      }
-      if (newPreferences.useSystemTheme != oldPreferences.useSystemTheme ||
-          newPreferences.isDarkMode != oldPreferences.isDarkMode) {
-        Provider.of<ThemeProvider>(context, listen: false)
-            .setTheme(useSystemTheme: newPreferences.useSystemTheme, isDarkMode: newPreferences.isDarkMode);
+      if (mounted) {
+        if (newPreferences.currency != oldPreferences.currency) {
+          formattingProvider.setCurrency(newPreferences.currency);
+        }
+        if (newPreferences.showCents != oldPreferences.showCents) {
+          formattingProvider.setShowCents(newPreferences.showCents);
+        }
+        if (newPreferences.useSystemTheme != oldPreferences.useSystemTheme ||
+            newPreferences.isDarkMode != oldPreferences.isDarkMode) {
+          themeProvider.setTheme(
+            useSystemTheme: newPreferences.useSystemTheme, 
+            isDarkMode: newPreferences.isDarkMode
+          );
+        }
       }
     } catch (e) {
-      setState(() {
-        _preferences = oldPreferences;
-      });
       if (mounted) {
+        setState(() {
+          _preferences = oldPreferences;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update preferences: $e')),
         );
@@ -210,10 +215,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           const Divider(),
           DataManagementSection(
-            onExport: _handleExport,
-            onBackup: () {
-              // TODO: Implement data backup
-            },
+            onExport: _handleExport
           ),
           const Divider(),
           AccountActionsSection(
