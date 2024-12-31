@@ -15,7 +15,7 @@ class RecentTransactionsList extends StatelessWidget {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       elevation: 4,
-      margin: const EdgeInsets.only(left: 16, right: 16, top: 48),
+      margin: const EdgeInsets.only(left: 8, right: 8),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16),
