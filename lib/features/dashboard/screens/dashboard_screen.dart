@@ -84,60 +84,98 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onRefresh: () async {
               setState(() {});
             },
-            child: Column(
-              children: [
-                const DashboardHeader(),
-                Expanded(
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    childAspectRatio: 3 / 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: [
-                      StatCard(
-                        title: 'Expenses',
-                        amount: stats[2],
-                        icon: Icons.money_off,
-                        iconColor: Colors.red,
-                      ),
-                      StatCard(
-                        title: 'Budget',
-                        amount: stats[1],
-                        icon: Icons.account_balance_wallet,
-                      ),
-                      StatCard(
-                        title: 'Income',
-                        amount: stats[0],
-                        icon: Icons.attach_money,
-                        iconColor: Colors.green,
-                      ),
-                      TopExpensesCard(topExpenses: topExpenses),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            'Recent Transactions',
-                            style: Theme.of(context).textTheme.headlineMedium,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Determine if we're in landscape mode
+                final isLandscape = constraints.maxWidth > constraints.maxHeight;
+                final screenWidth = constraints.maxWidth;
+                
+                // Adjust grid items per row based on screen width
+                final crossAxisCount = screenWidth < 600 ? 2 : 3;
+                
+                final titles = ['Expenses', 'Budget', 'Income', 'Top Expenses'];
+                final amounts = [stats[2].toDouble(), stats[1].toDouble(), stats[0].toDouble(), 0.0];
+                final icons = [Icons.money_off, Icons.account_balance_wallet, Icons.attach_money, Icons.money_off];
+                final iconColors = [Colors.red, null, Colors.green, null];
+
+                return Column(
+                  children: [
+                    const DashboardHeader(),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    // Calculate ideal height for top expenses (icon + title + 3 items)
+                                    final idealHeight = MediaQuery.of(context).size.width / crossAxisCount * 0.7;
+                                    
+                                    return GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: crossAxisCount,
+                                        childAspectRatio: (constraints.maxWidth - 32) / (crossAxisCount * idealHeight), // Account for padding
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8,
+                                      ),
+                                      itemCount: 4,
+                                      itemBuilder: (context, index) {
+                                        if (index < 3) {
+                                          return StatCard(
+                                            title: titles[index],
+                                            amount: amounts[index],
+                                            icon: icons[index],
+                                            iconColor: iconColors[index],
+                                          );
+                                        } else {
+                                          return TopExpensesCard(topExpenses: topExpenses);
+                                        }
+                                      },
+                                    );
+                                  },
+                                ),
+                                SizedBox(height: constraints.maxHeight * 0.4),
+                              ],
+                            ),
                           ),
-                        ),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            height: constraints.maxHeight * 0.4,
+                            child: Card(
+                              margin: EdgeInsets.zero,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Recent Transactions',
+                                      style: Theme.of(context).textTheme.headlineMedium,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Expanded(
+                                      child: RecentTransactionsList(transactions: transactions),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: RecentTransactionsList(transactions: transactions),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                  ],
+                );
+              },
             ),
           );
         },
