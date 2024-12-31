@@ -21,17 +21,18 @@ class TopExpensesCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
-              Icons.trending_up,
+              Icons.bar_chart,
               color: Theme.of(context).colorScheme.primary,
               size: 24,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               'Top Expenses',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -39,10 +40,51 @@ class TopExpensesCard extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 8),
-            ...topExpenses.map(
-              (entry) => Text(
-                '${entry['category']}: ${formattingProvider.formatAmount(entry['amount'])}',
-                style: Theme.of(context).textTheme.bodySmall,
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: topExpenses
+                        .take(3)
+                        .toList()
+                        .asMap()
+                        .entries
+                        .map(
+                          (entry) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    '${entry.key + 1}. ${entry.value['category']}',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    formattingProvider.formatAmount(entry.value['amount']),
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                    textAlign: TextAlign.right,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
               ),
             ),
           ],
