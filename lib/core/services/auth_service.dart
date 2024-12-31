@@ -7,20 +7,45 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
-      // final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      // final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-      // final AuthCredential credential = GoogleAuthProvider.credential(
-      //   accessToken: googleAuth.accessToken,
-      //   idToken: googleAuth.idToken,
-      // );
-      // UserCredential userCredential = await _auth.signInWithCredential(credential);
-      // return userCredential.user;
+      // Initiate Google Sign-In
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null; // User canceled the sign-in
 
-      print('IN DEVELOPMENT');
-      return null;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a credential using the Google token
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in with Firebase using the Google credential
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      return userCredential.user;
     } catch (e) {
       print('Error during Google Sign-In: $e');
       return null;
+    }
+  }
+
+  Future<void> trySilentSignIn() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signInSilently();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        await _auth.signInWithCredential(credential);
+        print('User silently signed in: ${_auth.currentUser?.displayName}');
+      } else {
+        print('No previous Google session found.');
+      }
+    } catch (e) {
+      print('Error during silent Google Sign-In: $e');
     }
   }
 
