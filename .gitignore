@@ -51,3 +51,9 @@ app.*.map.json
 **/google-services.json
 lib/firebase_options.dart
 firebase.json
+keystore/fundi-release-key.jks
+keystore/key.properties
+keystore/fundi-release.keystore
+macos/Runner/GoogleService-Info.plist
+ios/Runner/GoogleService-Info.plist
+devtools_options.yaml
