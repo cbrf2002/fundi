@@ -26,31 +26,52 @@ class StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: iconColor ?? Theme.of(context).colorScheme.primary,
-              size: 24,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+        padding: const EdgeInsets.all(8), // Fixed padding instead of responsive
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate responsive sizes based on card dimensions
+            final maxIconSize = constraints.maxHeight * 0.2;  
+            final maxTitleSize = constraints.maxHeight * 0.12; 
+            final maxAmountSize = constraints.maxHeight * 0.3; 
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: iconColor ?? Theme.of(context).colorScheme.primary,
+                  size: maxIconSize.clamp(14, 24),  
+                ),
+                const SizedBox(height: 4),  // Fixed spacing
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: maxTitleSize.clamp(10, 14),  
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),  // Fixed spacing
+                Expanded(
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        formattingProvider.formatAmount(amount),
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              height: 1,
+                              fontSize: maxAmountSize.clamp(14, 20),  
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              formattingProvider.formatAmount(amount),
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-            ),
-          ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
