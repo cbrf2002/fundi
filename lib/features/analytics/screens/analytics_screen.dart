@@ -1,9 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../core/providers/formatting_provider.dart';
+import '../../../core/models/transaction_model.dart';
+import '../controllers/analytics_controller.dart';
+import '../widgets/summary_section.dart';
+import '../widgets/category_expenses_section.dart';
+import '../widgets/monthly_trends_section.dart';
+import '../widgets/daily_expenses_section.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
+
+  @override
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  final AnalyticsController _analyticsController = AnalyticsController();
+  Map<String, List<double>>? _monthlyTrends;
+  Map<String, double>? _averageExpensesByDay;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final monthlyTrends = await _analyticsController.getMonthlyTrends();
+      final averageExpensesByDay = await _analyticsController.getAverageExpensesByDay();
+
+      if (mounted) {
+        setState(() {
+          _monthlyTrends = monthlyTrends;
+          _averageExpensesByDay = averageExpensesByDay;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading analytics data: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,102 +55,56 @@ class AnalyticsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Analytics'),
       ),
-      backgroundColor: Colors.transparent,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildSummaryCard(
-              context,
-              'Total Expenses',
-              1000.0,
-              Icons.money,
-              Colors.red,
-            ),
-            const SizedBox(height: 16),
-            _buildSummaryCard(
-              context,
-              'Total Income',
-              2000.0,
-              Icons.attach_money,
-              Colors.green,
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildCategoryExpenseItem(
-                    context,
-                    const MapEntry('Category 1', 500.0),
-                    1000.0,
-                  ),
-                  _buildCategoryExpenseItem(
-                    context,
-                    const MapEntry('Category 2', 300.0),
-                    1000.0,
-                  ),
-                  _buildCategoryExpenseItem(
-                    context,
-                    const MapEntry('Category 3', 200.0),
-                    1000.0,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : StreamBuilder<List<Transaction>>(
+              stream: _analyticsController.getTransactions(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-  Widget _buildSummaryCard(BuildContext context, String title, double amount, IconData icon, Color color) {
-    final formattingProvider = Provider.of<FormattingProvider>(context);
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              formattingProvider.formatAmount(amount),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: color,
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
 
-  Widget _buildCategoryExpenseItem(BuildContext context, MapEntry<String, double> entry, double totalExpenses) {
-    final formattingProvider = Provider.of<FormattingProvider>(context);
-    final percentage = (entry.value / totalExpenses * 100).toStringAsFixed(1);
-    
-    return ListTile(
-      title: Text(entry.key),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            formattingProvider.formatAmount(entry.value),
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '$percentage%',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ),
+                final transactions = snapshot.data ?? [];
+                if (transactions.isEmpty) {
+                  return const Center(child: Text('No transactions yet'));
+                }
+
+                final totalExpenses = _analyticsController.calculateTotalExpenses(transactions);
+                final totalIncome = _analyticsController.calculateTotalIncome(transactions);
+                final categoryExpenses = _analyticsController.calculateCategoryExpenses(transactions);
+
+                return RefreshIndicator(
+                  onRefresh: _loadData,
+                  child: ListView(
+                    children: [
+                      SummarySection(
+                        totalExpenses: totalExpenses,
+                        totalIncome: totalIncome,
+                        transactionCount: transactions.length,
+                      ),
+                      if (categoryExpenses.isNotEmpty)
+                        CategoryExpensesSection(
+                          categoryExpenses: categoryExpenses,
+                          totalExpenses: totalExpenses,
+                        ),
+                      if (_monthlyTrends != null && _monthlyTrends!.isNotEmpty)
+                        MonthlyTrendsSection(
+                          monthlyTrends: _monthlyTrends!,
+                        ),
+                      if (_averageExpensesByDay != null && _averageExpensesByDay!.isNotEmpty)
+                        DailyExpensesSection(
+                          averageExpensesByDay: _averageExpensesByDay!,
+                        ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                );
+              },
+            ),
     );
   }
 }
