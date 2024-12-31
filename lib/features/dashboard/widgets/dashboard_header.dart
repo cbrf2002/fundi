@@ -15,9 +15,9 @@ class DashboardHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text('Dashboard', style: Theme.of(context).textTheme.displaySmall),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Text(formattedDate, style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 64),
+          const SizedBox(height: 8),
         ],
       ),
     );
