@@ -80,7 +80,11 @@ class _LoginFormContainerState extends State<LoginFormContainer> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Welcome, ${user.displayName}!')),
                         );
-                        Navigator.pushNamed(context, '/dashboard');
+                        Navigator.pushNamed(context, '/main'); // Navigate to the main screen
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Google Sign-In failed.')),
+                        );
                       }
                     },
                     icon: const Icon(Icons.g_translate),
