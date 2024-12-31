@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/formatting_provider.dart';
 import 'core/utils/theme.dart';
@@ -58,13 +59,41 @@ class Fundi extends StatelessWidget {
                 ? ThemeMode.dark
                 : ThemeMode.light;
 
-        return MaterialApp(
-          title: 'Fundi',
-          theme: MaterialTheme(textTheme).light(),
-          darkTheme: MaterialTheme(textTheme).dark(),
-          themeMode: themeMode,
-          initialRoute: AppRoutes.splash,
-          routes: AppRoutes.routes,
+        return ResponsiveSizer(
+          builder: (context, orientation, screenType) {
+            return MaterialApp(
+              title: 'Fundi',
+              theme: MaterialTheme(textTheme).light(),
+              darkTheme: MaterialTheme(textTheme).dark(),
+              themeMode: themeMode,
+              initialRoute: AppRoutes.splash,
+              routes: AppRoutes.routes,
+              builder: (context, child) {
+                final mediaQuery = MediaQuery.of(context);
+                final textScaler = mediaQuery.textScaler;
+                final double adjustedScale;
+
+                if (textScaler.scale(1.0) > 1.1) {
+                  // For very large system text sizes, use a more conservative scale
+                  adjustedScale = 0.8;
+                } else if (textScaler.scale(1.0) < 0.8) {
+                  // For very small system text sizes, ensure minimum readability
+                  adjustedScale = 0.85;
+                } else {
+                  // For normal range, use a slightly reduced scale for consistency
+                  adjustedScale = 0.9;
+                }
+
+                return MediaQuery(
+                  data: mediaQuery.copyWith(
+                    // Apply the adjusted scale using textScaler
+                    textScaler: TextScaler.linear(adjustedScale),
+                  ),
+                  child: child ?? const SizedBox(),
+                );
+              },
+            );
+          },
         );
       },
     );
