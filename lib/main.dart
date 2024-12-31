@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
+import 'core/services/auth_service.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/formatting_provider.dart';
 import 'core/utils/theme.dart';
@@ -12,6 +13,7 @@ import 'routes/app_routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await AuthService().trySilentSignIn();
   
   runApp(
     MultiProvider(
