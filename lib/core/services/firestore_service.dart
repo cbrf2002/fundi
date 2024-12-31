@@ -83,6 +83,41 @@ class FirestoreService {
     }
   }
 
+  Stream<List<model.Transaction>> getTransactionsStream(String uid) {
+    try {
+      return _db
+          .collection('users')
+          .doc(uid)
+          .collection('transactions')
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => model.Transaction.fromMap(doc.data(), doc.id))
+              .toList());
+    } catch (e) {
+      print('Error fetching transactions stream: $e');
+      return const Stream.empty();
+    }
+  }
+
+  Future<List<model.Transaction>> getTransactionsBetweenDates(String uid, DateTime startDate, DateTime endDate) async {
+    try {
+      final snapshot = await _db
+          .collection('users')
+          .doc(uid)
+          .collection('transactions')
+          .where('date', isGreaterThanOrEqualTo: startDate)
+          .where('date', isLessThanOrEqualTo: endDate)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => model.Transaction.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      print('Error fetching transactions between dates: $e');
+      return [];
+    }
+  }
+
   Future<void> addTransaction(model.Transaction transaction) async {
     try {
       final docRef = _db
