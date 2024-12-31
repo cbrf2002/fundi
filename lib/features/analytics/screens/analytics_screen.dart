@@ -3,7 +3,7 @@ import '../../../core/models/transaction_model.dart';
 import '../controllers/analytics_controller.dart';
 import '../widgets/summary_section.dart';
 import '../widgets/category_expenses_section.dart';
-import '../widgets/monthly_trends_section.dart';
+import '../widgets/trends_section.dart';
 import '../widgets/daily_expenses_section.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -15,7 +15,9 @@ class AnalyticsScreen extends StatefulWidget {
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   final AnalyticsController _analyticsController = AnalyticsController();
+  Map<String, List<double>>? _dailyProjections;
   Map<String, List<double>>? _monthlyTrends;
+  Map<String, List<double>>? _weeklyTrends;
   Map<String, double>? _averageExpensesByDay;
   bool _isLoading = true;
 
@@ -28,12 +30,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Future<void> _loadData() async {
     try {
       final monthlyTrends = await _analyticsController.getMonthlyTrends();
+      final weeklyTrends = await _analyticsController.getWeeklyTrends();
       final averageExpensesByDay = await _analyticsController.getAverageExpensesByDay();
+      final dailyProjections = await _analyticsController.getDailyProjections(7); // Project for 7 days
 
       if (mounted) {
         setState(() {
           _monthlyTrends = monthlyTrends;
+          _weeklyTrends = weeklyTrends;
           _averageExpensesByDay = averageExpensesByDay;
+          _dailyProjections = dailyProjections;
           _isLoading = false;
         });
       }
@@ -91,9 +97,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           categoryExpenses: categoryExpenses,
                           totalExpenses: totalExpenses,
                         ),
-                      if (_monthlyTrends != null && _monthlyTrends!.isNotEmpty)
-                        MonthlyTrendsSection(
+                      if (_weeklyTrends != null && _monthlyTrends != null)
+                        TrendsSection(
+                          weeklyTrends: _weeklyTrends!,
                           monthlyTrends: _monthlyTrends!,
+                          dailyProjections: _dailyProjections,
                         ),
                       if (_averageExpensesByDay != null && _averageExpensesByDay!.isNotEmpty)
                         DailyExpensesSection(
