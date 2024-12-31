@@ -31,9 +31,9 @@ class DailyExpensesSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             SizedBox(
-              height: 180,
+              height: 200,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.only(bottom: 24),
                 child: _buildDailyChart(context, maxAmount),
               ),
             ),
@@ -62,7 +62,7 @@ class DailyExpensesSection extends StatelessWidget {
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth - 6 * 8;
         final barWidth = availableWidth / 7;
-        final chartHeight = constraints.maxHeight - 20;
+        final chartHeight = constraints.maxHeight - 28;
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -83,10 +83,13 @@ class DailyExpensesSection extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  dayAbbr,
-                  style: Theme.of(context).textTheme.bodySmall,
+                const SizedBox(height: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    dayAbbr,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
               ],
             );
