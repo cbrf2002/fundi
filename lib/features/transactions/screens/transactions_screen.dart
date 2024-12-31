@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
+import '../controllers/transactions_controller.dart';
+import '../widgets/transactions_list_view.dart';
+import '../widgets/transactions_tab_bar.dart';
 import '../../../core/models/transaction_model.dart' as model;
-import '../../../core/services/firestore_service.dart';
-import '../../../core/providers/formatting_provider.dart';
 import '../../dashboard/widgets/add_transaction_dialog.dart';
 
 class TransactionsScreen extends StatefulWidget {
@@ -15,12 +14,12 @@ class TransactionsScreen extends StatefulWidget {
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
   late Stream<List<model.Transaction>> _transactionsStream;
-  final FirestoreService _firestoreService = FirestoreService();
+  final TransactionsController _transactionsController = TransactionsController();
 
   @override
   void initState() {
     super.initState();
-    _transactionsStream = _firestoreService.getTransactions();
+    _transactionsStream = _transactionsController.getTransactions();
   }
 
   void _showAddTransactionDialog() {
@@ -43,16 +42,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 ),
           ),
           backgroundColor: Theme.of(context).colorScheme.primary,
-          bottom: TabBar(
-            labelColor: Theme.of(context).colorScheme.onPrimary,
-            unselectedLabelColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.6),
-            tabs: const [
-              Tab(text: 'Day'),
-              Tab(text: 'Week'),
-              Tab(text: 'Month'),
-              Tab(text: 'Year'),
-            ],
-          ),
+          bottom: const TransactionsTabBar(),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _showAddTransactionDialog,
@@ -70,7 +60,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               return RefreshIndicator(
                 onRefresh: () async {
                   setState(() {
-                    _transactionsStream = _firestoreService.getTransactions();
+                    _transactionsStream = _transactionsController.getTransactions();
                   });
                 },
                 child: TabBarView(
@@ -86,88 +76,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           },
         ),
       ),
-    );
-  }
-}
-
-class TransactionsListView extends StatelessWidget {
-  final String timeFrame;
-  final List<model.Transaction> transactions;
-
-  const TransactionsListView({super.key, required this.timeFrame, required this.transactions});
-
-  List<model.Transaction> _filterTransactions() {
-    final now = DateTime.now();
-    final startDate = switch (timeFrame) {
-      'day' => DateTime(now.year, now.month, now.day),
-      'week' => now.subtract(const Duration(days: 7)),
-      'month' => DateTime(now.year, now.month, 1),
-      'year' => DateTime(now.year, 1, 1),
-      _ => now,
-    };
-
-    return transactions
-        .where((t) => t.date.isAfter(startDate) || t.date.isAtSameMomentAs(startDate))
-        .toList()
-      ..sort((a, b) => b.date.compareTo(a.date)); // Sort by newest first
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filteredTransactions = _filterTransactions();
-    final formattingProvider = Provider.of<FormattingProvider>(context);
-
-    if (filteredTransactions.isEmpty) {
-      return const Center(
-        child: Text('No transactions for this period'),
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: filteredTransactions.length,
-      separatorBuilder: (context, index) => const Divider(),
-      itemBuilder: (context, index) {
-        var transaction = filteredTransactions[index];
-        final bool isExpense = transaction.type == model.TransactionType.expense;
-        final color = isExpense ? Colors.red : Colors.green;
-        final icon = isExpense ? Icons.remove : Icons.add;
-        final time = DateFormat('HH:mm').format(transaction.date);
-        final date = DateFormat('MMM d, y').format(transaction.date);
-
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: color.withOpacity(0.2),
-            child: Icon(
-              icon,
-              color: color,
-            ),
-          ),
-          title: Text(
-            transaction.category,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                date,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              Text(
-                time,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          trailing: Text(
-            formattingProvider.formatAmount(transaction.amount),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: color,
-                ),
-          ),
-        );
-      },
     );
   }
 }
