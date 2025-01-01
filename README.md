@@ -78,7 +78,7 @@ flutter run
 
 ## **📸 Screenshots**  
 
-_Showcase screenshots of your app to highlight the dashboard, analytics, and charts._
+TBA
 
 ---
 
