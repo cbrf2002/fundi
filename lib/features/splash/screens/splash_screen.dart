@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/providers/formatting_provider.dart';
 import '../../../routes/app_routes.dart';
+import '../../../widgets/circle_gradient_background.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,15 +29,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      // Initialize theme and formatting preferences with user preferences
       await Future.wait([
         Provider.of<ThemeProvider>(context, listen: false)
             .initializeTheme(currentUser.uid),
         Provider.of<FormattingProvider>(context, listen: false)
             .initializeFormatting(currentUser.uid),
       ]);
-      
-      if (!mounted) return;
+
       Navigator.pushReplacementNamed(context, AppRoutes.main);
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
@@ -59,20 +58,25 @@ class _SplashScreenState extends State<SplashScreen> {
     );
 
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(logoPath, width: 150, height: 150),
-            const SizedBox(height: 16),
-            Text(
-              'Fundi',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+      body: Stack(
+        children: [
+          const CircleGradientBackground(),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(logoPath, width: 150, height: 150),
+                const SizedBox(height: 16),
+                Text(
+                  'Fundi',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
