@@ -38,6 +38,7 @@ class StatCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                const SizedBox(height: 16),
                 Icon(
                   icon,
                   color: iconColor ?? Theme.of(context).colorScheme.primary,
@@ -46,9 +47,9 @@ class StatCard extends StatelessWidget {
                 const SizedBox(height: 4),  // Fixed spacing
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: maxTitleSize.clamp(10, 14),  
+                        fontSize: maxTitleSize.clamp(12, 16),  
                       ),
                   textAlign: TextAlign.center,
                 ),
@@ -59,10 +60,10 @@ class StatCard extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       child: Text(
                         formattingProvider.formatAmount(amount),
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                               height: 1,
-                              fontSize: maxAmountSize.clamp(14, 20),  
+                              fontSize: maxAmountSize.clamp(16, 24),  
                             ),
                         textAlign: TextAlign.center,
                       ),
