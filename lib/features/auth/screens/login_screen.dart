@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/login_background.dart';
+import '../../../widgets/circle_gradient_background.dart';
 import '../widgets/login_header.dart';
 import '../widgets/login_form_container.dart';
 
@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          const LoginBackground(),
+          const CircleGradientBackground(),
           Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),

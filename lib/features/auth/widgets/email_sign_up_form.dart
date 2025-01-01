@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/theme_provider.dart';
+import '../../../core/providers/formatting_provider.dart';
 import 'auth_text_field.dart';
 import 'package:fundi/core/services/auth_service.dart';
 
@@ -54,26 +57,37 @@ class EmailSignUpForm extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           FilledButton(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+            ),
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 final user = await AuthService().signUpWithEmail(
                   emailController.text,
                   passwordController.text,
                 );
-                if (user != null) {
-                  await user.sendEmailVerification();
+                if (user != null && context.mounted) {
+                  // Initialize preferences before navigation
+                  await Future.wait([
+                    Provider.of<ThemeProvider>(context, listen: false)
+                        .initializeTheme(user.uid),
+                    Provider.of<FormattingProvider>(context, listen: false)
+                        .initializeFormatting(user.uid),
+                  ]);
+
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Verification email sent to ${user.email}.')),
+                    const SnackBar(content: Text('Account created successfully!')),
                   );
-                  Navigator.pushReplacementNamed(context, '/main');
-                } else {
+                  Navigator.pushNamed(context, '/main');
+                } else if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Sign-Up failed.')),
+                    const SnackBar(content: Text('Failed to create account. Email might be already in use.')),
                   );
                 }
               }
             },
-            child: const Text('Sign Up'),
+            child: const Text('Create Account'),
           ),
         ],
       ),

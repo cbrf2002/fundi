@@ -3,11 +3,7 @@ import '../../../core/services/auth_service.dart';
 
 class AuthController {
   final AuthService _authService = AuthService();
-
-  Future<User?> signInWithGoogle() async {
-    return await _authService.signInWithGoogle();
-  }
-
+  
   Future<User?> signInWithEmail(String email, String password) async {
     return await _authService.signInWithEmail(email, password);
   }
