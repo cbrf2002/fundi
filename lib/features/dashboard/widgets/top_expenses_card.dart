@@ -27,6 +27,7 @@ class TopExpensesCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            const SizedBox(height: 8),
             Icon(
               Icons.bar_chart,
               color: Theme.of(context).colorScheme.primary,
@@ -35,7 +36,7 @@ class TopExpensesCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Top Expenses',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
             ),
