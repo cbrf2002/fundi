@@ -86,11 +86,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Determine if we're in landscape mode
                 final isLandscape = constraints.maxWidth > constraints.maxHeight;
                 final screenWidth = constraints.maxWidth;
                 
-                // Adjust grid items per row based on screen width
                 final crossAxisCount = screenWidth < 600 ? 2 : 3;
                 
                 final titles = ['Expenses', 'Budget', 'Income', 'Top Expenses'];
