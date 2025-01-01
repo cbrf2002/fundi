@@ -57,3 +57,4 @@ keystore/fundi-release.keystore
 macos/Runner/GoogleService-Info.plist
 ios/Runner/GoogleService-Info.plist
 devtools_options.yaml
+keystore/release.keystore
