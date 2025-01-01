@@ -86,7 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isLandscape = constraints.maxWidth > constraints.maxHeight;
+                //final isLandscape = constraints.maxWidth > constraints.maxHeight;
                 final screenWidth = constraints.maxWidth;
                 
                 final crossAxisCount = screenWidth < 600 ? 2 : 3;
