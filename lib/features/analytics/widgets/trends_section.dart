@@ -16,10 +16,10 @@ class TrendsSection extends StatefulWidget {
   });
 
   @override
-  _TrendsSectionState createState() => _TrendsSectionState();
+  TrendsSectionState createState() => TrendsSectionState();
 }
 
-class _TrendsSectionState extends State<TrendsSection> {
+class TrendsSectionState extends State<TrendsSection> {
   bool _showWeekly = true;
 
   @override
@@ -203,7 +203,7 @@ class _TrendsSectionState extends State<TrendsSection> {
               horizontalInterval: maxAmount / 5,
               getDrawingHorizontalLine: (value) {
                 return FlLine(
-                  color: Theme.of(context).dividerColor.withOpacity(0.2),
+                  color: Theme.of(context).dividerColor.withAlpha(51),
                   strokeWidth: 1,
                 );
               },
