@@ -8,10 +8,10 @@ class AddTransactionDialog extends StatefulWidget {
   const AddTransactionDialog({super.key});
 
   @override
-  _AddTransactionDialogState createState() => _AddTransactionDialogState();
+  AddTransactionDialogState createState() => AddTransactionDialogState();
 }
 
-class _AddTransactionDialogState extends State<AddTransactionDialog> {
+class AddTransactionDialogState extends State<AddTransactionDialog> {
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   TransactionType _transactionType = TransactionType.expense;
