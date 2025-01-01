@@ -58,3 +58,5 @@ macos/Runner/GoogleService-Info.plist
 ios/Runner/GoogleService-Info.plist
 devtools_options.yaml
 keystore/release.keystore
+.vscode/settings.json
+android/build/reports/problems/problems-report.html
