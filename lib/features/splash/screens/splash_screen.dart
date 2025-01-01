@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuthAndNavigate() async {
     await Future.delayed(const Duration(seconds: 2));
-    
+
     if (!mounted) return;
 
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -36,8 +36,10 @@ class _SplashScreenState extends State<SplashScreen> {
             .initializeFormatting(currentUser.uid),
       ]);
 
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.main);
     } else {
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     }
   }
