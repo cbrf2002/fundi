@@ -1,111 +1,145 @@
-# **Fundi - Smart Finance Tracker**  
+# Fundi - Smart Finance Tracker
 
-Fundi is a **modern, feature-rich personal finance management application** designed to simplify budgeting, track expenses, and empower users with actionable financial insights. Built with Flutter, Fundi combines advanced analytics with a user-friendly interface for effortless financial tracking.
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="lib/assets/logo/logoDark.svg" width="300">
+    <source media="(prefers-color-scheme: light)" srcset="lib/assets/logo/logoLight.svg" width="300">
+    <img alt="Fundi Logo" src="lib/assets/logo/logoLight.svg" width="300">
+  </picture>
 
----
+  <p align="center">
+    <strong>Empower Your Financial Journey</strong>
+  </p>
 
-## **✨ Features**  
+  <p align="center">
+    <a href="#-features">Features</a> •
+    <a href="#-getting-started">Getting Started</a> •
+    <a href="#-screenshots">Screenshots</a> •
+    <a href="#-contributing">Contributing</a>
+  </p>
 
-### **💰 Comprehensive Financial Tracking**  
-- Track income and expenses with ease.  
-- Categorize transactions for better insights.  
-- Real-time budget monitoring.  
-- Detailed transaction history with export to CSV.  
-
-### **📊 Advanced Analytics**  
-- **Weekly and Monthly Trends:** Analyze your spending and income patterns over time.  
-- **Daily Expense Patterns:** Gain insights into your day-to-day spending habits.  
-- **Category Breakdown:** Visualize expenses by category for smarter budgeting.  
-- **Future Projections:** Predict future income and expenses using historical data.  
-- **Interactive Visualizations:** Beautiful charts and graphs for intuitive analysis.  
-
-### **🗃️ Smart Dashboard**  
-- Comprehensive financial overview at a glance.  
-- Recent transaction list.  
-- Top expense categories and key statistics.  
-- Real-time budget updates and tracking.  
-
-### **⚙️ Customization**  
-- Multi-currency support.  
-- Light and dark themes.  
-- Personalized preferences for user profiles.  
-- Exportable data for seamless reporting.  
+  <p align="center">
+    <img alt="Flutter Version" src="https://img.shields.io/badge/Flutter-3.10+-blue?logo=flutter">
+    <img alt="Dart Version" src="https://img.shields.io/badge/Dart-3.0+-orange?logo=dart">
+    <img alt="License" src="https://img.shields.io/badge/License-MIT-green">
+  </p>
+</div>
 
 ---
 
-## **🔧 Technical Overview**  
+## Overview
 
-### **🚀 Built With**  
-- **Flutter**: Cross-platform UI framework.  
-- **Firebase**: Backend, authentication, and data storage.  
-- **Material Design 3**: Modern UI and UX components.  
-- **Provider**: Efficient state management.  
-- **fl_chart**: Interactive and visually appealing charts.  
-
-### **🔒 Security Features**  
-- Encrypted data storage.  
-- Secure authentication for user accounts.  
-- Privacy-focused design principles.  
-- Regular security updates for data protection.  
+Fundi is a **cutting-edge personal finance management application** designed to transform how you understand and control your financial life. By combining intuitive design with powerful analytics, Fundi empowers you to make smarter financial decisions effortlessly.
 
 ---
 
-## **🔖 Getting Started**  
+## Key Features
 
-Follow these steps to get started with Fundi on your local machine:  
+### Comprehensive Financial Management
+- **Intelligent Expense Tracking**
+  - Real-time transaction categorization
+  - Detailed spending insights
+  - Customizable budget allocations
 
-### **1. Clone the Repository**  
-```bash
-git clone https://github.com/cbrf2002/Fundi.git
-```  
+### Advanced Financial Analytics
+- **Predictive Insights**
+  - Personalized spending trend analysis
+  - Future financial projections
+  - Interactive data visualizations
 
-### **2. Install Dependencies**  
-```bash
-flutter pub get
-```  
+### Smart Budgeting
+- **Dynamic Budget Tools**
+  - Automated expense tracking
+  - Goal-setting mechanisms
+  - Personalized financial recommendations
 
-### **3. Run the App**  
-```bash
-flutter run
-```  
-
-### **4. Customize Your Experience**  
-- Use the built-in themes and preferences.  
-- Explore weekly and monthly trends.  
-- Analyze your financial data with advanced charts and projections.  
-
----
-
-## **📸 Screenshots**  
-
-_Showcase screenshots of your app to highlight the dashboard, analytics, and charts._
+### Seamless User Experience
+- **Cross-Platform Compatibility**
+  - Responsive design
+  - Dark and light themes
+  - Intuitive user interface
 
 ---
 
-## **🛡️ Security**  
+## Technical Architecture
 
-Fundi prioritizes the security and privacy of your financial data:  
-- End-to-end encryption of sensitive data.  
-- Secure login and authentication process.  
-- Local data storage options for added control.  
-- Regular updates to enhance security and privacy.  
+### Technologies
+- **Frontend**: Flutter
+- **State Management**: Provider
+- **Backend**: Firebase
+- **Design System**: Material Design 3
+- **Charting**: fl_chart
 
----
-
-## **🤝 Contributing**  
-
-Contributions are welcome!  
-- Report issues via GitHub.  
-- Submit pull requests for new features or fixes.  
-
-Together, we can make Fundi the ultimate personal finance tool!  
+### Security Highlights
+- End-to-end data encryption
+- Secure authentication
+- Privacy-first design principles
 
 ---
 
-### **📜 License**  
-[Include license details if applicable.]
+## Screenshots
 
-### **✨ Acknowledgments**  
-Special thanks to the Flutter and Firebase communities for their support and tools.  
+<div style="display: flex; overflow-x: auto; white-space: nowrap; gap: 10px; padding: 10px 0;">
+  <img src="assets/screenshots/S1.jpg" alt="Screenshot 1" style="height: 500px; object-fit: contain;">
+  <img src="assets/screenshots/S2.jpg" alt="Screenshot 2" style="height: 500px; object-fit: contain;">
+  <img src="assets/screenshots/S3.jpg" alt="Screenshot 3" style="height: 500px; object-fit: contain;">
+  <img src="assets/screenshots/S4.jpg" alt="Screenshot 4" style="height: 500px; object-fit: contain;">
+  <img src="assets/screenshots/S5.jpg" alt="Screenshot 5" style="height: 500px; object-fit: contain;">
+  <img src="assets/screenshots/S6.jpg" alt="Screenshot 6" style="height: 500px; object-fit: contain;">
+  <img src="assets/screenshots/S7.jpg" alt="Screenshot 7" style="height: 500px; object-fit: contain;">
+</div>
+
+*Swipe or scroll horizontally to view all screenshots*
 
 ---
+
+## Getting Started
+
+### Prerequisites
+- Flutter 3.10+
+- Dart 3.0+
+- Android Studio or VS Code
+
+### Installation Steps
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/cbrf2002/Fundi.git
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Run the Application**
+   ```bash
+   flutter run
+   ```
+
+---
+
+## Contributing
+
+We welcome contributions! Here's how you can help:
+
+- **Report Bugs**: Open GitHub issues
+- **Suggest Features**: Create feature request issues
+- **Submit PRs**: Help improve the codebase
+
+Please read our [Contributing Guidelines](CONTRIBUTING.md) before getting started.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+- Flutter Community
+- Firebase Team
+- Open Source Contributors
+
+**Made with ❤️ by [Your Name/Organization]**
