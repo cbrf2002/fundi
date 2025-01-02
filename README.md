@@ -29,7 +29,7 @@
 
 ## Overview
 
-Fundi is a **cutting-edge personal finance management application** designed to transform how you understand and control your financial life. By combining intuitive design with powerful analytics, Fundi empowers you to make smarter financial decisions effortlessly.
+Fundi is a **personal finance management application** based on Flutter and Firebase designed to simplify budgeting, track expenses, and empower users with actionable financial insights.
 
 ---
 
