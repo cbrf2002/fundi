@@ -8,7 +8,7 @@
   </picture>
 
   <p align="center">
-    <strong>Empower Your Financial Journey</strong>
+    <strong>Your expense tracking app.</strong>
   </p>
 
   <p align="center">
