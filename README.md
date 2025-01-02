@@ -79,6 +79,7 @@ Fundi is a **cutting-edge personal finance management application** designed to 
 
 ## Screenshots
 
+<<<<<<< HEAD
 <div style="display: flex; overflow-x: auto; white-space: nowrap; gap: 10px; padding: 10px 0;">
   <img src="assets/screenshots/S1.jpg" alt="Screenshot 1" style="height: 500px; object-fit: contain;">
   <img src="assets/screenshots/S2.jpg" alt="Screenshot 2" style="height: 500px; object-fit: contain;">
@@ -90,6 +91,9 @@ Fundi is a **cutting-edge personal finance management application** designed to 
 </div>
 
 *Swipe or scroll horizontally to view all screenshots*
+=======
+TBA
+>>>>>>> 1d2c6677609a967155a8d41670fbd1e8a9624b9a
 
 ---
 
