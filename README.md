@@ -104,3 +104,9 @@ Fundi is a **cutting-edge personal finance management application** designed to 
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/cbrf2002/Fundi.git
+
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE). 
+
+You can also read the full license text at the [Apache official website](https://www.apache.org/licenses/LICENSE-2.0).
