@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/formatting_provider.dart';
@@ -13,8 +15,9 @@ class DailyExpensesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formatter = Provider.of<FormattingProvider>(context);
-    final maxAmount = averageExpensesByDay.values
-        .reduce((a, b) => a > b ? a : b);
+    final maxAmount = averageExpensesByDay.values.isEmpty
+        ? 0.0
+        : averageExpensesByDay.values.reduce((a, b) => a > b ? a : b);
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -39,15 +42,19 @@ class DailyExpensesSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ...averageExpensesByDay.entries.map((entry) {
+              // Ensure percentage is non-negative and handle maxAmount <= 0
+              final percentage =
+                  (maxAmount > 0) ? max(0.0, entry.value / maxAmount) : 0.0;
               return Column(
                 children: [
                   _buildDayRow(
                     context,
                     entry.key,
                     formatter.formatAmount(entry.value),
-                    entry.value / maxAmount,
+                    percentage,
                   ),
-                  if (entry.key != averageExpensesByDay.keys.last) const Divider(),
+                  if (entry.key != averageExpensesByDay.keys.last)
+                    const Divider(),
                 ],
               );
             }),
@@ -68,7 +75,10 @@ class DailyExpensesSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: averageExpensesByDay.entries.map((entry) {
-            final height = (entry.value / maxAmount) * chartHeight;
+            // Ensure normalized value is non-negative and handle maxAmount <= 0
+            final normalizedValue =
+                (maxAmount > 0) ? max(0.0, entry.value / maxAmount) : 0.0;
+            final height = normalizedValue * chartHeight;
             final dayAbbr = entry.key.substring(0, 3);
 
             return Column(
@@ -79,8 +89,12 @@ class DailyExpensesSection extends StatelessWidget {
                   width: barWidth,
                   height: height,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withAlpha((0.7 * 255).toInt()),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withAlpha((0.7 * 255).toInt()),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(4)),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -103,7 +117,7 @@ class DailyExpensesSection extends StatelessWidget {
     BuildContext context,
     String day,
     String amount,
-    double percentage,
+    double percentage, // Percentage is now guaranteed non-negative
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -137,7 +151,7 @@ class DailyExpensesSection extends StatelessWidget {
                 ),
               ),
               FractionallySizedBox(
-                widthFactor: percentage,
+                widthFactor: percentage, // Use the safe percentage
                 child: Container(
                   height: 4,
                   decoration: BoxDecoration(
