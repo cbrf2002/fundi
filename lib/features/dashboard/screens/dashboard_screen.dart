@@ -7,6 +7,7 @@ import '../widgets/top_expenses_card.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../widgets/add_transaction_dialog.dart';
 import '../../../core/models/transaction_model.dart';
+import '../../../main_screen/main_screen.dart'; // Import MainScreen
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -29,7 +30,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness:
+            brightness == Brightness.dark ? Brightness.light : Brightness.dark,
         statusBarBrightness: brightness,
       ),
     );
@@ -76,7 +78,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
 
           var transactions = snapshot.data ?? [];
-          transactions.sort((a, b) => b.date.compareTo(a.date)); // Sort by newest first
+          transactions
+              .sort((a, b) => b.date.compareTo(a.date)); // Sort by newest first
           final stats = _dashboardController.calculateStats(transactions);
           final topExpenses = _dashboardController.getTopExpenses(transactions);
 
@@ -88,12 +91,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
               builder: (context, constraints) {
                 //final isLandscape = constraints.maxWidth > constraints.maxHeight;
                 final screenWidth = constraints.maxWidth;
-                
+
                 final crossAxisCount = screenWidth < 600 ? 2 : 3;
-                
+
                 final titles = ['Expenses', 'Budget', 'Income', 'Top Expenses'];
-                final amounts = [stats[2].toDouble(), stats[1].toDouble(), stats[0].toDouble(), 0.0];
-                final icons = [Icons.money_off, Icons.account_balance_wallet, Icons.attach_money, Icons.money_off];
+                final amounts = [
+                  stats[2].toDouble(),
+                  stats[1].toDouble(),
+                  stats[0].toDouble(),
+                  0.0
+                ];
+                final icons = [
+                  Icons.money_off,
+                  Icons.account_balance_wallet,
+                  Icons.attach_money,
+                  Icons.money_off
+                ];
                 final iconColors = [Colors.red, null, Colors.green, null];
 
                 return Column(
@@ -108,29 +121,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 LayoutBuilder(
                                   builder: (context, constraints) {
                                     // Calculate ideal height for top expenses (icon + title + 3 items)
-                                    final idealHeight = MediaQuery.of(context).size.width / crossAxisCount * 0.7;
-                                    
+                                    final idealHeight =
+                                        MediaQuery.of(context).size.width /
+                                            crossAxisCount *
+                                            0.7;
+
                                     return GridView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 8),
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: crossAxisCount,
-                                        childAspectRatio: (constraints.maxWidth - 32) / (crossAxisCount * idealHeight), // Account for padding
+                                        childAspectRatio: (constraints
+                                                    .maxWidth -
+                                                32) /
+                                            (crossAxisCount *
+                                                idealHeight), // Account for padding
                                         crossAxisSpacing: 8,
                                         mainAxisSpacing: 8,
                                       ),
                                       itemCount: 4,
                                       itemBuilder: (context, index) {
+                                        // Common onTap handler
+                                        void navigateToAnalytics() {
+                                          final mainScreenState =
+                                              context.findAncestorStateOfType<
+                                                  MainScreenState>();
+                                          mainScreenState?.navigateToIndex(
+                                              2); // Navigate to Analytics (index 2)
+                                        }
+
                                         if (index < 3) {
-                                          return StatCard(
-                                            title: titles[index],
-                                            amount: amounts[index],
-                                            icon: icons[index],
-                                            iconColor: iconColors[index],
+                                          // Wrap StatCard with InkWell
+                                          return InkWell(
+                                            onTap: navigateToAnalytics,
+                                            child: StatCard(
+                                              title: titles[index],
+                                              amount: amounts[index],
+                                              icon: icons[index],
+                                              iconColor: iconColors[index],
+                                            ),
                                           );
                                         } else {
-                                          return TopExpensesCard(topExpenses: topExpenses);
+                                          // Wrap TopExpensesCard with InkWell
+                                          return InkWell(
+                                            onTap: navigateToAnalytics,
+                                            child: TopExpensesCard(
+                                                topExpenses: topExpenses),
+                                          );
                                         }
                                       },
                                     );
@@ -145,25 +186,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             right: 0,
                             bottom: 0,
                             height: constraints.maxHeight * 0.4,
-                            child: Card(
-                              margin: EdgeInsets.zero,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Recent Transactions',
-                                      style: Theme.of(context).textTheme.headlineMedium,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Expanded(
-                                      child: RecentTransactionsList(transactions: transactions),
-                                    ),
-                                  ],
+                            // Wrap Card with InkWell
+                            child: InkWell(
+                              onTap: () {
+                                // Find MainScreenState and navigate
+                                final mainScreenState = context
+                                    .findAncestorStateOfType<MainScreenState>();
+                                mainScreenState?.navigateToIndex(
+                                    1); // Navigate to Transactions (index 1)
+                              },
+                              child: Card(
+                                margin: EdgeInsets.zero,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16)),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal:
+                                          16),
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 16),
+                                      // Make title non-interactive if needed, or keep as is
+                                      ExcludeSemantics(
+                                        child: Text(
+                                          'Recent Transactions',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineMedium,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Ignore pointer events for the list itself to ensure the InkWell captures the tap
+                                      Expanded(
+                                        child: IgnorePointer(
+                                          child: RecentTransactionsList(
+                                              transactions: transactions),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
