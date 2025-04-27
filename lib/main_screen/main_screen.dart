@@ -49,6 +49,12 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
+  void navigateToIndex(int index) {
+    if (index >= 0 && index < _screens.length) {
+      _onTap(index);
+    }
+  }
+
   void _onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
