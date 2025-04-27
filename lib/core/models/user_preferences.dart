@@ -5,6 +5,9 @@ class UserPreferences {
   final bool isDarkMode;
   final bool showCents;
   final bool enableNotifications;
+  final String decimalSeparatorPreference; // 'device', 'dot', 'comma'
+  final String
+      thousandsSeparatorPreference; // 'device', 'dot', 'comma', 'space', 'none'
 
   UserPreferences({
     required this.uid,
@@ -13,6 +16,8 @@ class UserPreferences {
     required this.isDarkMode,
     required this.showCents,
     required this.enableNotifications,
+    this.decimalSeparatorPreference = 'device', // Default to device setting
+    this.thousandsSeparatorPreference = 'device', // Default to device setting
   });
 
   UserPreferences copyWith({
@@ -22,6 +27,8 @@ class UserPreferences {
     bool? isDarkMode,
     bool? showCents,
     bool? enableNotifications,
+    String? decimalSeparatorPreference,
+    String? thousandsSeparatorPreference,
   }) {
     return UserPreferences(
       uid: uid ?? this.uid,
@@ -30,6 +37,10 @@ class UserPreferences {
       isDarkMode: isDarkMode ?? this.isDarkMode,
       showCents: showCents ?? this.showCents,
       enableNotifications: enableNotifications ?? this.enableNotifications,
+      decimalSeparatorPreference:
+          decimalSeparatorPreference ?? this.decimalSeparatorPreference,
+      thousandsSeparatorPreference:
+          thousandsSeparatorPreference ?? this.thousandsSeparatorPreference,
     );
   }
 
@@ -41,6 +52,8 @@ class UserPreferences {
       'isDarkMode': isDarkMode,
       'showCents': showCents,
       'enableNotifications': enableNotifications,
+      'decimalSeparatorPreference': decimalSeparatorPreference,
+      'thousandsSeparatorPreference': thousandsSeparatorPreference,
     };
   }
 
@@ -52,6 +65,37 @@ class UserPreferences {
       isDarkMode: map['isDarkMode'] ?? false,
       showCents: map['showCents'] ?? true,
       enableNotifications: map['enableNotifications'] ?? true,
+      decimalSeparatorPreference: map['decimalSeparatorPreference'] ?? 'device',
+      thousandsSeparatorPreference:
+          map['thousandsSeparatorPreference'] ?? 'device',
     );
+  }
+
+  String get decimalSeparatorDescription {
+    switch (decimalSeparatorPreference) {
+      case 'dot':
+        return 'Dot (.)';
+      case 'comma':
+        return 'Comma (,)';
+      case 'device':
+      default:
+        return 'Device Default';
+    }
+  }
+
+  String get thousandsSeparatorDescription {
+    switch (thousandsSeparatorPreference) {
+      case 'dot':
+        return 'Dot (.)';
+      case 'comma':
+        return 'Comma (,)';
+      case 'space':
+        return 'Space ( )';
+      case 'none':
+        return 'None';
+      case 'device':
+      default:
+        return 'Device Default';
+    }
   }
 }
