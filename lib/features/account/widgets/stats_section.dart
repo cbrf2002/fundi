@@ -22,10 +22,12 @@ class StatsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 8),
           Text(
             'Overview',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
                 ),
           ),
           const SizedBox(height: 16),
@@ -59,6 +61,7 @@ class StatsSection extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
