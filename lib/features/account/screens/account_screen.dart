@@ -68,9 +68,10 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _updatePreferences(UserPreferences newPreferences) async {
     UserPreferences oldPreferences = _preferences;
-    final formattingProvider = Provider.of<FormattingProvider>(context, listen: false);
+    final formattingProvider =
+        Provider.of<FormattingProvider>(context, listen: false);
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
+
     try {
       setState(() {
         _preferences = newPreferences;
@@ -89,9 +90,8 @@ class _AccountScreenState extends State<AccountScreen> {
         if (newPreferences.useSystemTheme != oldPreferences.useSystemTheme ||
             newPreferences.isDarkMode != oldPreferences.isDarkMode) {
           themeProvider.setTheme(
-            useSystemTheme: newPreferences.useSystemTheme, 
-            isDarkMode: newPreferences.isDarkMode
-          );
+              useSystemTheme: newPreferences.useSystemTheme,
+              isDarkMode: newPreferences.isDarkMode);
         }
       }
     } catch (e) {
@@ -127,7 +127,7 @@ class _AccountScreenState extends State<AccountScreen> {
     });
     try {
       final filePath = await _accountController.exportData();
-      
+
       if (filePath != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Data exported to: $filePath')),
@@ -194,11 +194,33 @@ class _AccountScreenState extends State<AccountScreen> {
           ProfileHeader(userProfile: _userProfile),
           const Divider(),
           FutureBuilder<List<num>>(
-            future: _accountController.getStats(_userProfile.uid),
+            // Check if uid is valid before creating the future
+            future: (_userProfile.uid.isNotEmpty)
+                ? _accountController.getStats(_userProfile.uid)
+                : Future.value(
+                    [0, 0.0, 0]), // Return default stats if uid is invalid
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+              // Handle potential errors from the future
+              if (snapshot.hasError) {
+                print(
+                    "Error getting stats in FutureBuilder: ${snapshot.error}");
+                // Optionally show an error message in the UI
+                return StatsSection(
+                  transactionCount: 0,
+                  monthlyTotal: 0.0,
+                  categoryCount: 0,
+                );
               }
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  _userProfile.uid.isNotEmpty) {
+                // Show loading only if we actually initiated the fetch
+                return const Center(
+                    child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(),
+                ));
+              }
+              // Use snapshot data or default if uid was invalid or future failed
               final stats = snapshot.data ?? [0, 0.0, 0];
               return StatsSection(
                 transactionCount: stats[0] as int,
@@ -214,9 +236,7 @@ class _AccountScreenState extends State<AccountScreen> {
             onShowCurrencyPicker: _showCurrencyPicker,
           ),
           const Divider(),
-          DataManagementSection(
-            onExport: _handleExport
-          ),
+          DataManagementSection(onExport: _handleExport),
           const Divider(),
           AccountActionsSection(
             onChangePassword: _handleChangePassword,
