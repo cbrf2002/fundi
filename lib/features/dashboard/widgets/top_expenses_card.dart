@@ -15,7 +15,7 @@ class TopExpensesCard extends StatelessWidget {
     final formattingProvider = Provider.of<FormattingProvider>(context);
 
     return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      color: Theme.of(context).colorScheme.secondaryContainer,
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
