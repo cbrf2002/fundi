@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:typed_data';
+import 'package:intl/intl.dart';
 import '../../../core/models/user_preferences.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/providers/theme_provider.dart';
@@ -12,6 +14,9 @@ import '../widgets/preferences_section.dart';
 import '../widgets/data_management_section.dart';
 import '../widgets/account_actions_section.dart';
 import '../widgets/currency_picker_dialog.dart';
+import '../widgets/separator_picker_dialog.dart';
+import '../../../core/utils/permissions_helper.dart';
+import '../widgets/delete_all_confirmation_dialog.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -32,15 +37,16 @@ class _AccountScreenState extends State<AccountScreen> {
     _loadUserData();
   }
 
-  Future<void> requestStoragePermission() async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      await Permission.storage.request();
-    }
-  }
-
   Future<void> _loadUserData() async {
-    await requestStoragePermission();
+    bool permissionGranted = await PermissionsHelper.requestStoragePermission();
+    if (!permissionGranted && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('Storage permission is required to function properly.')),
+      );
+    }
+
     try {
       if (!_accountController.isUserLoggedIn()) {
         if (mounted) Navigator.pushReplacementNamed(context, '/login');
@@ -79,7 +85,6 @@ class _AccountScreenState extends State<AccountScreen> {
 
       await _accountController.saveUserPreferences(newPreferences);
 
-      // Update providers
       if (mounted) {
         if (newPreferences.currency != oldPreferences.currency) {
           formattingProvider.setCurrency(newPreferences.currency);
@@ -92,6 +97,16 @@ class _AccountScreenState extends State<AccountScreen> {
           themeProvider.setTheme(
               useSystemTheme: newPreferences.useSystemTheme,
               isDarkMode: newPreferences.isDarkMode);
+        }
+        if (newPreferences.decimalSeparatorPreference !=
+            oldPreferences.decimalSeparatorPreference) {
+          formattingProvider.setDecimalSeparatorPreference(
+              newPreferences.decimalSeparatorPreference);
+        }
+        if (newPreferences.thousandsSeparatorPreference !=
+            oldPreferences.thousandsSeparatorPreference) {
+          formattingProvider.setThousandsSeparatorPreference(
+              newPreferences.thousandsSeparatorPreference);
         }
       }
     } catch (e) {
@@ -121,19 +136,107 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
+  void _showDecimalSeparatorPicker() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SeparatorPickerDialog(
+          title: 'Select Decimal Separator',
+          currentPreference: _preferences.decimalSeparatorPreference,
+          options: const {
+            'device': 'Device Default',
+            'dot': 'Dot (.)',
+            'comma': 'Comma (,)',
+          },
+          onSelected: (preference) {
+            final newPrefs =
+                _preferences.copyWith(decimalSeparatorPreference: preference);
+            _updatePreferences(newPrefs);
+          },
+        );
+      },
+    );
+  }
+
+  void _showThousandsSeparatorPicker() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SeparatorPickerDialog(
+          title: 'Select Thousands Separator',
+          currentPreference: _preferences.thousandsSeparatorPreference,
+          options: const {
+            'device': 'Device Default',
+            'dot': 'Dot (.)',
+            'comma': 'Comma (,)',
+            'space': 'Space ( )',
+            'none': 'None',
+          },
+          onSelected: (preference) {
+            final newPrefs =
+                _preferences.copyWith(thousandsSeparatorPreference: preference);
+            _updatePreferences(newPrefs);
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _handleExport() async {
+    // 1. Request Permission using the helper
+    bool permissionGranted = await PermissionsHelper.requestStoragePermission();
+
+    if (!permissionGranted && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Storage access is needed to save or share the export file. Please grant permission in settings.')),
+      );
+      // Stop the export process if permission is denied
+      return;
+    }
+
+    // Proceed only if permission is granted
     setState(() {
       _isLoading = true;
     });
-    try {
-      final filePath = await _accountController.exportData();
 
-      if (filePath != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Data exported to: $filePath')),
-        );
-      } else {
-        throw Exception('Export failed');
+    try {
+      // 2. Get CSV Data (existing code)
+      final String csvData = await _accountController.exportData();
+
+      // 3. Prepare file for sharing (existing code)
+      final String timestamp =
+          DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      final String fileName = 'fundi_export_$timestamp.csv';
+      final XFile fileToShare = XFile.fromData(
+        Uint8List.fromList(csvData.codeUnits),
+        name: fileName,
+        mimeType: 'text/csv',
+      );
+
+      // 4. Use Share Plugin (existing code)
+      final result = await Share.shareXFiles(
+        [fileToShare],
+        subject: 'Fundi Data Export $timestamp',
+        text: 'Here is your Fundi transaction data exported on $timestamp.',
+      );
+
+      // ... existing result handling ...
+      if (mounted) {
+        if (result.status == ShareResultStatus.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data ready for sharing/saving.')),
+          );
+        } else if (result.status == ShareResultStatus.dismissed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Export cancelled.')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not initiate sharing.')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -148,6 +251,47 @@ class _AccountScreenState extends State<AccountScreen> {
         });
       }
     }
+  }
+
+  void _showDeleteAllConfirmationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, // Prevent closing by tapping outside during operation
+      builder: (BuildContext context) {
+        return DeleteAllConfirmationDialog(
+          onConfirm: () async {
+            // Show loading indicator immediately after dialog closes
+            setState(() {
+              _isLoading = true;
+            });
+            try {
+              await _accountController.deleteAllTransactions();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('All transactions deleted successfully.')),
+                );
+                // Optionally trigger a refresh of stats or other dependent data
+                // For simplicity, we just stop loading here. A full refresh might be needed.
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to delete data: $e')),
+                );
+              }
+            } finally {
+              if (mounted) {
+                setState(() {
+                  _isLoading = false;
+                });
+              }
+            }
+          },
+        );
+      },
+    );
   }
 
   Future<void> _handleChangePassword() async {
@@ -176,6 +320,10 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final formattingProvider =
+        Provider.of<FormattingProvider>(context, listen: false);
+    formattingProvider.updateLocale(Localizations.localeOf(context));
+
     if (_isLoading) {
       return const Scaffold(
         body: Center(
@@ -194,33 +342,24 @@ class _AccountScreenState extends State<AccountScreen> {
           ProfileHeader(userProfile: _userProfile),
           const Divider(),
           FutureBuilder<List<num>>(
-            // Check if uid is valid before creating the future
-            future: (_userProfile.uid.isNotEmpty)
-                ? _accountController.getStats(_userProfile.uid)
-                : Future.value(
-                    [0, 0.0, 0]), // Return default stats if uid is invalid
+            future: _accountController.getAccountScreenStats(),
             builder: (context, snapshot) {
-              // Handle potential errors from the future
               if (snapshot.hasError) {
                 print(
                     "Error getting stats in FutureBuilder: ${snapshot.error}");
-                // Optionally show an error message in the UI
                 return StatsSection(
                   transactionCount: 0,
                   monthlyTotal: 0.0,
                   categoryCount: 0,
                 );
               }
-              if (snapshot.connectionState == ConnectionState.waiting &&
-                  _userProfile.uid.isNotEmpty) {
-                // Show loading only if we actually initiated the fetch
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                     child: Padding(
                   padding: EdgeInsets.all(16.0),
                   child: CircularProgressIndicator(),
                 ));
               }
-              // Use snapshot data or default if uid was invalid or future failed
               final stats = snapshot.data ?? [0, 0.0, 0];
               return StatsSection(
                 transactionCount: stats[0] as int,
@@ -234,9 +373,15 @@ class _AccountScreenState extends State<AccountScreen> {
             preferences: _preferences,
             onPreferencesChanged: _updatePreferences,
             onShowCurrencyPicker: _showCurrencyPicker,
+            onShowDecimalSeparatorPicker: _showDecimalSeparatorPicker,
+            onShowThousandsSeparatorPicker: _showThousandsSeparatorPicker,
           ),
           const Divider(),
-          DataManagementSection(onExport: _handleExport),
+          DataManagementSection(
+            onExport: _handleExport,
+            // Pass the new handler
+            onDeleteAll: _showDeleteAllConfirmationDialog,
+          ),
           const Divider(),
           AccountActionsSection(
             onChangePassword: _handleChangePassword,
