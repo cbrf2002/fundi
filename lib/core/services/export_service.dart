@@ -1,79 +1,55 @@
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
-import '../models/transaction_model.dart' as model;
-import 'firestore_service.dart';
+import '../models/transaction_model.dart';
 
 class ExportService {
-  final FirestoreService _firestoreService = FirestoreService();
-
-  Future<String?> exportTransactionsToCSV() async {
-    try {
-      // Request storage permission
-      if (!await _requestStoragePermission()) {
-        throw Exception('Storage permission denied');
-      }
-
-      // Get transactions
-      final transactions = await _firestoreService.getAllTransactions();
-      if (transactions.isEmpty) {
-        throw Exception('No transactions to export');
-      }
-
-      // Create CSV content
-      final csvData = _createCSVContent(transactions);
-
-      // Get downloads directory
-      final downloadsDir = await _getDownloadsDirectory();
-      if (downloadsDir == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
-      // Create file name with timestamp
-      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = 'fundi_transactions_$timestamp.csv';
-      final file = File('${downloadsDir.path}/$fileName');
-
-      // Write to file
-      await file.writeAsString(csvData);
-      return file.path;
-    } catch (e) {
-      print('Error exporting transactions: $e');
-      return null;
+  // Change return type to String
+  Future<String> exportTransactionsToCSV(List<Transaction> transactions) async {
+    if (transactions.isEmpty) {
+      throw Exception('No transactions to export.');
     }
-  }
 
-  Future<bool> _requestStoragePermission() async {
-    if (Platform.isAndroid) {
-      final status = await Permission.storage.request();
-      return status.isGranted;
-    }
-    return true; // iOS doesn't need explicit permission for downloads directory
-  }
-
-  Future<Directory?> _getDownloadsDirectory() async {
-    if (Platform.isAndroid) {
-      return Directory('/storage/emulated/0/Download');
-    } else {
-      return await getApplicationDocumentsDirectory();
-    }
-  }
-
-  String _createCSVContent(List<model.Transaction> transactions) {
-    final buffer = StringBuffer();
-    
-    // Add header
-    buffer.writeln('Date,Type,Category,Amount');
-    
-    // Add transactions
+    // Prepare CSV data (existing code)
+    final List<List<String>> csvData = [
+      ['ID', 'Date', 'Category', 'Amount', 'Type']
+    ];
+    final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
     for (var transaction in transactions) {
-      final date = DateFormat('yyyy-MM-dd HH:mm:ss').format(transaction.date);
-      final amount = transaction.amount.toStringAsFixed(2);
-      
-      buffer.writeln('$date,${transaction.type},${transaction.category},$amount');
+      csvData.add([
+        transaction.id,
+        formatter.format(transaction.date),
+        transaction.category,
+        transaction.amount.toStringAsFixed(2),
+        transaction.type.toString().split('.').last
+      ]);
     }
-    
-    return buffer.toString();
+
+    // Convert to CSV string (existing code)
+    String csvString =
+        csvData.map((row) => row.map(_escapeCsvField).join(',')).join('\n');
+
+    // Remove file saving logic
+    /*
+    try {
+      // Get directory ... (removed)
+      // ...
+      // Write to file ... (removed)
+      // ...
+      return filePath; // Now returns csvString
+    } catch (e) {
+      print('Error exporting CSV: $e');
+      throw Exception('Failed to export data: $e');
+    }
+    */
+
+    // Return the CSV content directly
+    return csvString;
+  }
+
+  // Helper to escape fields containing commas, quotes, or newlines (existing code)
+  String _escapeCsvField(String field) {
+    if (field.contains(',') || field.contains('"') || field.contains('\n')) {
+      return '"${field.replaceAll('"', '""')}"';
+    }
+    return field;
   }
 }
