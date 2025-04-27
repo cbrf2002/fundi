@@ -19,42 +19,94 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthAndNavigate();
+    _checkAuthStatus();
   }
 
-  Future<void> _checkAuthAndNavigate() async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
-
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      await Future.wait([
-        Provider.of<ThemeProvider>(context, listen: false)
-            .initializeTheme(currentUser.uid),
-        Provider.of<FormattingProvider>(context, listen: false)
-            .initializeFormatting(currentUser.uid),
-      ]);
-
+  Future<void> _checkAuthStatus() async {
+    // Listen to the stream of authentication state changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) async {
+      // Ensure the widget is still mounted before proceeding
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, AppRoutes.main);
-    } else {
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
-    }
+
+      if (user == null) {
+        // User is signed out -> Go to Login
+        _scheduleNavigation(AppRoutes.login);
+      } else {
+        // User is signed in, BUT check verification status
+        bool verified = false;
+        String? userId;
+        try {
+          // Reload user data to get the latest verification status
+          await user.reload();
+          // Get the potentially updated user object
+          final freshUser = FirebaseAuth.instance.currentUser;
+
+          // Check mount status again after await
+          if (!mounted) return;
+
+          if (freshUser != null && freshUser.emailVerified) {
+            verified = true;
+            userId = freshUser.uid;
+          }
+        } catch (e) {
+          // Error reloading user (e.g., network issue) -> Treat as unverified
+          print("Error reloading user during auth check: $e");
+          verified = false;
+        }
+
+        // Check mount status again before final logic
+        if (!mounted) return;
+
+        if (verified && userId != null) {
+          // User is signed in AND verified -> Initialize providers and go to Main
+          try {
+            // Initialize providers *before* navigating to main
+            await Future.wait([
+              Provider.of<ThemeProvider>(context, listen: false)
+                  .initializeTheme(userId),
+              Provider.of<FormattingProvider>(context, listen: false)
+                  .initializeFormatting(userId),
+            ]);
+            if (mounted) _scheduleNavigation(AppRoutes.main);
+          } catch (e) {
+            print("Error initializing providers: $e");
+            // Handle error, maybe sign out and go to login
+            await FirebaseAuth.instance.signOut();
+            if (mounted) _scheduleNavigation(AppRoutes.login);
+          }
+        } else {
+          // User is signed in BUT NOT verified (or reload failed) -> Sign out and go to Login
+          await FirebaseAuth.instance.signOut();
+          if (mounted) _scheduleNavigation(AppRoutes.login);
+        }
+      }
+    });
+  }
+
+  void _scheduleNavigation(String routeName) {
+    // Schedule navigation to occur after the current frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Check if mounted AGAIN before navigating, as the callback might fire later
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, routeName);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     // Determine the logo based on the theme
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final String logoPath = isDarkMode ? 'lib/assets/logo/logoDark.svg' : 'lib/assets/logo/logoLight.svg';
+    final String logoPath = isDarkMode
+        ? 'lib/assets/logo/logoDark.svg'
+        : 'lib/assets/logo/logoLight.svg';
 
     // Set transparent status bar with appropriate icon brightness
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness:
+            isDarkMode ? Brightness.light : Brightness.dark,
         statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
       ),
     );
