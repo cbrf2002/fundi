@@ -13,7 +13,7 @@ class RecentTransactionsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      color: Theme.of(context).colorScheme.secondaryContainer,
       elevation: 4,
       margin: const EdgeInsets.only(left: 8, right: 8),
       shape: const RoundedRectangleBorder(
