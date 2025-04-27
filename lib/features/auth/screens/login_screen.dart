@@ -23,7 +23,8 @@ class _LoginScreenState extends State<LoginScreen> {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness:
+            brightness == Brightness.dark ? Brightness.light : Brightness.dark,
         statusBarBrightness: brightness,
       ),
     );
@@ -32,18 +33,24 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Prevent resize when keyboard appears to avoid background distortion
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           const CircleGradientBackground(),
           Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  LoginHeader(),
-                  LoginFormContainer(),
-                ],
+            // Wrap the Padding/Column with SingleChildScrollView
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    LoginHeader(),
+                    SizedBox(height: 24), // Add some spacing if needed
+                    LoginFormContainer(),
+                  ],
+                ),
               ),
             ),
           ),
