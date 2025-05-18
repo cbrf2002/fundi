@@ -22,8 +22,27 @@ class TransactionsController {
     };
 
     return transactions
-        .where((t) => t.date.isAfter(startDate) || t.date.isAtSameMomentAs(startDate))
+        .where((t) =>
+            t.date.isAfter(startDate) || t.date.isAtSameMomentAs(startDate))
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date)); // Sort by newest first
+  }
+
+  double calculateTotalExpenses(List<model.Transaction> transactions) {
+    return transactions
+        .where((t) => t.type == model.TransactionType.expense)
+        .fold(0.0, (sum, t) => sum + t.amount);
+  }
+
+  double calculateTotalIncome(List<model.Transaction> transactions) {
+    return transactions
+        .where((t) => t.type == model.TransactionType.income)
+        .fold(0.0, (sum, t) => sum + t.amount);
+  }
+
+  double calculateNetTotal(List<model.Transaction> transactions) {
+    final totalIncome = calculateTotalIncome(transactions);
+    final totalExpenses = calculateTotalExpenses(transactions);
+    return totalIncome - totalExpenses;
   }
 }
