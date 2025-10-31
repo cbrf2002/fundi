@@ -8,10 +8,6 @@
   </picture>
 
   <p align="center">
-    <strong>Your expense tracking app.</strong>
-  </p>
-
-  <p align="center">
     <a href="#-features">Features</a> •
     <a href="#-getting-started">Getting Started</a> •
     <a href="#-screenshots">Screenshots</a> •
